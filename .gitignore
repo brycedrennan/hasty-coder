@@ -1,0 +1,11 @@
+.idea
+.DS_Store
+__pycache__
+excluded
+demo_projects/*
+**/*.egg-info
+build
+dist
+.coverage
+.coveragerc
+.python-version
