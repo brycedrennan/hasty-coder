@@ -1,11 +1,10 @@
 import json
 import logging
 import re
-
-import openai.error
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
+import openai.error
 from langchain import OpenAI
 
 logger = logging.getLogger(__name__)
@@ -18,7 +17,7 @@ def extract_json(text):
 
 class LoggedOpenAI(OpenAI):
     def __init__(self, *args, **kwargs):
-        kwargs["request_timeout"] = 15
+        kwargs["request_timeout"] = 30
         kwargs.setdefault("max_tokens", 2000)
         super().__init__(*args, **kwargs)
 
@@ -26,10 +25,10 @@ class LoggedOpenAI(OpenAI):
         prompt = prompt.strip()
         total_response = ""
         for i in range(6):
-            logger.info("PROMPT: %s ENDPROMPT", prompt)
+            logger.debug("STARTPROMPT\n%s\nENDPROMPT", prompt)
             last_response = super().__call__(prompt + total_response, stop)
             total_response += last_response
-            logger.info("ANSWER: %s ENDANSWER", last_response)
+            logger.debug("STARTANSWER:\n%s\nENDANSWER", last_response)
             if not as_json:
                 return total_response
             try:
@@ -67,7 +66,7 @@ def parallel_run(func, iterable, kwargs=None, max_workers=10):
 
 def slugify(text):
     # camelcase to dash-separated
-    text = re.sub(r"([a-z])([A-Z])", r"\1-\2", text.strip())
+    text = re.sub(r"([a-zA-Z])([A-Z])", r"\1-\2", text.strip())
 
     # replace any whitespace or punctuation with a dash
     text = re.sub(r"[\s_-]+", "-", text)

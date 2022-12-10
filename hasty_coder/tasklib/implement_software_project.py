@@ -3,11 +3,11 @@ import pathlib
 import re
 from datetime import datetime
 
-from hasty_coder.tasklib.create_code_project_plan import SoftwareProjectPlan
-from hasty_coder.utils import LoggedOpenAI, slugify, parallel_run
+from hasty_coder.models import SoftwareProjectDescription
+from hasty_coder.utils import LoggedOpenAI, parallel_run, slugify
 
 
-def implement_project_plan(project_plan: SoftwareProjectPlan, projects_path):
+def implement_project_plan(project_plan: SoftwareProjectDescription, projects_path):
     project_folder_name = slugify(project_plan.software_name)
     project_path = create_project_skeleton(
         project_path=os.path.join(projects_path, project_folder_name),
@@ -22,7 +22,7 @@ def implement_project_plan(project_plan: SoftwareProjectPlan, projects_path):
     def gen_and_save(filepath):
         file_contents = generate_file_contents(filepath, project_plan)
         if file_contents:
-            with open(os.path.join(project_path, filepath), "w") as f:
+            with open(os.path.join(project_path, filepath), "w", encoding="utf-8") as f:
                 f.write(file_contents)
 
     parallel_run(gen_and_save, files_only_filepaths)
@@ -51,12 +51,12 @@ def create_project_skeleton(project_path, filepaths):
     return base_path
 
 
-def generate_file_contents(filepath, project_plan: SoftwareProjectPlan):
+def generate_file_contents(filepath, project_plan: SoftwareProjectDescription):
     llm = LoggedOpenAI(temperature=0.01)
     description = project_plan.project_files.get(filepath, "")
     end_token = "ENDOFFILE_ZZZ"
     prompt = f"""
-{project_plan.render()}
+{project_plan.as_markdown()}
 
 INSTRUCTIONS
 Based on the description above. Write the contents of the {filepath} file. Denote the end of the file with the string "{end_token}"
@@ -75,10 +75,10 @@ The {filepath} file is described as "{description}".
 
 
 if __name__ == "__main__":
-    plan = SoftwareProjectPlan(
+    plan = SoftwareProjectDescription(
         short_description="a flask app that creates poetry based on a prompt from the user. it uses the openai client library from pypi.org",
         software_name="Python\n\nPoetify.",
-        programming_language="Python",
+        primary_programming_language="Python",
         start_cmd="",
         components={
             "Flask App": "A web application framework written in Python that will be used to create the Poetify application.",

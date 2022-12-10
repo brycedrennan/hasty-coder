@@ -8,12 +8,13 @@ setup(
     packages=["hasty_coder"],
     entry_points={
         "console_scripts": [
-            "hasty-code = hasty_coder.cli:hasty_code",
-            "hc = hasty_coder.cli:hasty_code",
+            "hasty-code = hasty_coder.cli:route_cmd",
+            "hc = hasty_coder.cli:route_cmd",
         ]
     },
     install_requires=[
         "click",
+        "langchain",
         "openai",
         "black",
         "isort",

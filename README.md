@@ -12,8 +12,10 @@ $ pip install hasty-coder
 $ EXPORT OPENAI_API_KEY=<your-openai-api-key>
 $ cd ~/projects
 $ hasty-code "a flask app that creates insulting poems using the openai client library"
-
 # wait a few seconds...
 Project 'PythonInsultingPoetryGenerator' created at ~/projects/python-insulting-poetry-generator
+
+$ hc "a command line tool that insults the user"
+Project 'InsultGenerator' created at ~/projects/insult-generator
 
 ```

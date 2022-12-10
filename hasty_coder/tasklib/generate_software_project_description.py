@@ -1,53 +1,13 @@
 import logging
-from dataclasses import dataclass, asdict
-from typing import List
 
+from hasty_coder.models import SoftwareProjectDescription
 from hasty_coder.utils import LoggedOpenAI, phraseify
 
 
-@dataclass
-class SoftwareProjectPlan:
-    short_description: str
-    software_name: str = None
-    programming_language: str = None
-    start_cmd: str = None
-    components: dict = None
-    requirements: List[str] = None
-    project_files: dict = None
-
-    def render(self):
-        section_texts = []
-        for key, value in asdict(self).items():
-            if value:
-                formatted_key = key.upper().replace("_", " ")
-                section_text = f"{formatted_key}: {value}"
-                if isinstance(value, dict):
-                    subsection_texts = []
-                    for subkey, subvalue in value.items():
-                        subsection_text = f" - {subkey} - {subvalue}"
-                        subsection_texts.append(subsection_text)
-                    subsection_text = "\n".join(subsection_texts)
-                    section_text = f"{formatted_key}:\n{subsection_text}"
-                elif isinstance(value, list):
-                    subsection_texts = []
-                    for item in value:
-                        subsection_text = f" - {item}"
-                        subsection_texts.append(subsection_text)
-                    subsection_text = "\n".join(subsection_texts)
-                    section_text = f"{formatted_key}:\n{subsection_text}"
-                section_texts.append(section_text)
-
-        doctext = f"""# `{self.software_name}` Project Plan\n\n""" + "\n\n".join(
-            section_texts
-        )
-        return doctext
-
-
-def flesh_out_project_plan(short_description):
-
-    project_plan = SoftwareProjectPlan(short_description=short_description)
+def flesh_out_project_description(short_description):
+    project_plan = SoftwareProjectDescription(short_description=short_description)
     project_plan.software_name = generate_project_name(short_description)
-    project_plan.programming_language = determine_programming_language(
+    project_plan.primary_programming_language = determine_programming_language(
         short_description
     )
     project_plan.components = generate_programming_components(project_plan)
@@ -56,17 +16,23 @@ def flesh_out_project_plan(short_description):
     return project_plan
 
 
+def generate_project_description():
+    prompt = "Write a single sentence description of python software you want to write:"
+    return LoggedOpenAI(temperature=1)(prompt).strip()
+
+
 def generate_project_name(short_description):
-    llm = LoggedOpenAI(temperature=0.01)
     prompt = f"""
-SOFTWARE DESCRIPTION: {short_description}
+## SOFTWARE DESCRIPTION
+{short_description}
 
 Based on the description above. What would be a good short name for this project? Ideally it would be witty, clever,
 and memorable.
-PROGRAMMING LANGUAGE:
+## SOFTWARE PROJECT NAME
 """
-    programming_language = llm(prompt)
-    return phraseify(programming_language.strip())
+    software_name = LoggedOpenAI(temperature=0.9)(prompt)
+    software_name = phraseify(software_name.strip())
+    return software_name
 
 
 def determine_programming_language(short_description):
@@ -84,7 +50,7 @@ PROGRAMMING LANGUAGE:
 def generate_programming_components(project_plan):
     llm = LoggedOpenAI(temperature=0.02)
     prompt = f"""
-{project_plan.render()}
+{project_plan.as_markdown()}
 
 Based on the description above, lets break down the software into components. Write a list of components and 
 a short description of their purpose. Write your answer as a json dictionary of where the key is the component name
@@ -99,7 +65,7 @@ SOFTWARE COMPONENTS:
 def generate_project_requirements(project_plan):
     llm = LoggedOpenAI(temperature=0.02)
     prompt = f"""
-{project_plan.render()}
+{project_plan.as_markdown()}
 
 Based on the description above, let's write a list of requirements for the completion of the software. 
 Write your answer as a json list of strings.
@@ -112,7 +78,7 @@ REQUIREMENTS:
 def generate_project_file_structure(project_plan):
     llm = LoggedOpenAI(temperature=0.02)
     prompt = f"""
-{project_plan.render()}
+{project_plan.as_markdown()}
 
 INSTRUCTIONS:
 Based on the description above, let's layout the project file structure. No code should be in the root of the project
@@ -125,7 +91,7 @@ PROJECT FILES (json list of strings):
     files = llm(prompt, as_json=True)
     file_text = "\n".join(f" - {file}" for file in files)
     prompt = f"""
-{project_plan.render()}
+{project_plan.as_markdown()}
 
 PROJECT FILES:
 {file_text}
@@ -147,14 +113,15 @@ if __name__ == "__main__":
     # print(determine_programming_language("test", "test"))
     logging.basicConfig(level=logging.INFO)
 
-    # program_description = flesh_out_project_plan(
+    # program_description = flesh_out_project_description(
     #     "flask-joker",
     #     "flask app that tells jokes using the openai client library (from pypi.org). doesn't use a database"
     # )
-    short_description = "a flask app that creates poetry based on a prompt from the user. it uses the openai client library from pypi.org"
-
-    program_description = flesh_out_project_plan(short_description)
+    # short_description = "a flask app that creates poetry based on a prompt from the user. it uses the openai client library from pypi.org"
+    _short_description = generate_project_description()
+    print(f"Description: {_short_description}")
+    program_description = flesh_out_project_description(_short_description)
     print("")
     print(program_description)
     print("")
-    print(program_description.render())
+    print(program_description.as_markdown())

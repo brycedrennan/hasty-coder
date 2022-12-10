@@ -15,7 +15,7 @@ init: require_pyenv  ## Setup a dev environment for local development.
 	@pyenv local $(venv_name)
 	@echo -e "\033[0;32m ✔️  🐍 $(venv_name) virtualenv activated \033[0m"
 	pip install --upgrade pip pip-tools
-	pip-sync requirements-dev.txt
+	pip-sync tests/dev-requirements.txt
 	pip install -e . --no-deps
 	@echo -e "\nEnvironment setup! ✨ 🍰 ✨ 🐍 \n\nCopy this path to tell PyCharm where your virtualenv is. You may have to click the refresh button in the pycharm file explorer.\n"
 	@echo -e "\033[0;32m"
@@ -53,7 +53,7 @@ deploy:  ## Deploy the package to pypi.org
 
 
 requirements:  ## Freeze the requirements.txt file
-	pip-compile setup.py tests/dev-requirements.in --output-file=tests/dev-requirements.txt --upgrade
+	pip-compile setup.py tests/dev-requirements.in --resolver=backtracking --output-file=tests/dev-requirements.txt --upgrade
 
 require_pyenv:
 	@if ! [ -x "$$(command -v pyenv)" ]; then\
