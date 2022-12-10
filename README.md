@@ -1,10 +1,10 @@
-# HastyCoder
-Are you tired of spending hours, days, or even weeks writing bug-ridden code for your software projects? 
+# HastyCoder 🤖📝💻🚀💥
 
-Do you wish there was a way to get your bug-ridden code written faster? 
 
-**HastyCoder is here to help! HastyCoder can write entire code-repositories 
-for you in a matter of seconds!**
+**Write broken code. Faster!** 
+
+HastyCoder is your very fast but unreliable coding partner. Hasty writes entire code repos based on your single sentence 
+description.
 
 ## Quick Start
 ```bash
