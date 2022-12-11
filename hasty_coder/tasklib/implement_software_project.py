@@ -1,10 +1,10 @@
 import os.path
 import pathlib
-import re
 from datetime import datetime
 
 from hasty_coder.models import SoftwareProjectDescription
-from hasty_coder.utils import LoggedOpenAI, parallel_run, slugify
+from hasty_coder.tasklib.filegen import generate_file_contents
+from hasty_coder.utils import parallel_run, slugify
 
 
 def implement_project_plan(project_plan: SoftwareProjectDescription, projects_path):
@@ -49,71 +49,3 @@ def create_project_skeleton(project_path, filepaths):
         if not filepath.endswith("/"):
             full_path.touch()
     return base_path
-
-
-def generate_file_contents(filepath, project_plan: SoftwareProjectDescription):
-    llm = LoggedOpenAI(temperature=0.01)
-    description = project_plan.project_files.get(filepath, "")
-    end_token = "ENDOFFILE_ZZZ"
-    prompt = f"""
-{project_plan.as_markdown()}
-
-INSTRUCTIONS
-Based on the description above. Write the contents of the {filepath} file. Denote the end of the file with the string "{end_token}"
-The {filepath} file is described as "{description}".
-{filepath} FILE CONTENTS:
-"""
-    for i in range(3):
-        file_contents = llm(prompt, stop=[end_token])
-        if file_contents:
-            break
-
-    # strip all types of whitespace from ends
-    file_contents = re.sub(r"^\s+|\s+$", "", file_contents)
-
-    return file_contents
-
-
-if __name__ == "__main__":
-    plan = SoftwareProjectDescription(
-        short_description="a flask app that creates poetry based on a prompt from the user. it uses the openai client library from pypi.org",
-        software_name="Python\n\nPoetify.",
-        primary_programming_language="Python",
-        start_cmd="",
-        components={
-            "Flask App": "A web application framework written in Python that will be used to create the Poetify application.",
-            "OpenAI Client Library": "A library from pypi.org that will be used to generate the poetry based on the user's prompt.",
-            "User Interface": "The user interface will be used to allow the user to input their prompt and view the generated poetry.",
-            "Database": "A database will be used to store the user's prompt and the generated poetry.",
-        },
-        requirements=[
-            "Create a Flask App",
-            "Integrate OpenAI Client Library",
-            "Design a User Interface",
-            "Implement a Database",
-        ],
-        project_files={
-            "README.md": "Describes the project and its components.",
-            "Makefile": "Builds the project.",
-            "Dockerfile": "Contains instructions for building a Docker image.",
-            ".gitignore": "Ignores files that should not be tracked by git.",
-            "requirements.txt": "Lists the project's dependencies.",
-            "poetify/": "",
-            "poetify/__init__.py": "Initializes the Flask app.",
-            "poetify/app.py": "Defines the Flask app.",
-            "poetify/config.py": "Configures the Flask app.",
-            "poetify/models.py": "Defines the database models.",
-            "poetify/views.py": "Defines the views for the Flask app.",
-            "poetify/templates/": "",
-            "poetify/templates/index.html": "Defines the HTML template for the user interface.",
-            "poetify/static/": "",
-            "poetify/static/css/": "Contains the CSS files for the user interface.",
-            "poetify/static/js/": "Contains the JavaScript files for the user interface.",
-            "poetify/tests/": "",
-            "poetify/tests/test_app.py": "Tests the Flask app.",
-            "poetify/tests/test_config.py": "Tests the Flask app configuration.",
-            "poetify/tests/test_models.py": "Tests the database models.",
-            "poetify/tests/test_views.py": "Tests the views for the Flask app.",
-        },
-    )
-    implement_project_plan(plan, "/Users/bryce/projects/hasty-coder/demo_projects")

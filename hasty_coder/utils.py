@@ -30,7 +30,7 @@ class LoggedOpenAI(OpenAI):
             total_response += last_response
             logger.debug("STARTANSWER:\n%s\nENDANSWER", last_response)
             if not as_json:
-                return total_response
+                return total_response.strip()
             try:
                 return extract_json(last_response)
             except json.JSONDecodeError:

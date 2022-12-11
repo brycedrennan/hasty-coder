@@ -18,14 +18,12 @@ def cli():
 @cli.command("repo")
 @click.argument("description")
 def make_repo(description):
-    click.echo(f"Description: {description}")
-    write_code(description, Path("."), show_work=True)
+    write_code(Path("."), description, show_work=True)
 
 
 @cli.command("repo-plan")
 @click.argument("description")
 def make_repo_plan(description):
-    click.echo(f"Description: {description}")
     project_description = flesh_out_project_description(description)
     print(project_description.as_markdown())
 
@@ -33,10 +31,15 @@ def make_repo_plan(description):
 def route_cmd():
     configure_logging()
     if len(sys.argv) == 2:
-        sys.argv.insert(1, "repo")
+        if sys.argv[1].lower().startswith("yolo"):
+            print("YOLO! 😎🤘🏼👊")
+            sys.argv[1] = "repo"
+            sys.argv.append("")
+        else:
+            sys.argv.insert(1, "repo")
     cli()
 
 
 if __name__ == "__main__":
-    configure_logging()
+    configure_logging("INFO")
     route_cmd()

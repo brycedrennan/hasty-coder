@@ -1,39 +1,76 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass, fields
 from typing import List
 
 
 @dataclass
 class SoftwareStack:
-    primary_programming_language: str
-    secondary_programming_languages: List[str]
-    primary_framework: str
-    secondary_frameworks: List[str]
+    primary_programming_language: str = None
+    secondary_programming_languages: List[str] = None
+    primary_framework: str = None
+    secondary_frameworks: List[str] = None
+    testing_tooling: List[str] = None
+
+    def as_markdown(self):
+        md = f"""
+- Programming Languages: **{self.primary_programming_language}**. {", ".join(self.secondary_programming_languages)}
+- Frameworks: **{self.primary_framework}**. {", ".join(self.secondary_frameworks)}
+- Testing Tooling: {", ".join(self.testing_tooling)}
+        """
+        return md.strip()
 
 
 @dataclass
 class SoftwareProjectDescription:
-    short_description: str
     software_name: str = None
+    short_description: str = None
+    long_description: str = None
+    tagline: str = None
+    emoji_tagline: str = None
+    installation_instructions: str = None
+    quick_start: str = None
+    features: dict = None
+    todo: List[str] = None
     software_stack: SoftwareStack = None
-    primary_programming_language: str = None
-    secondary_programming_languages: str = None
-    start_cmd: str = None
-    components: dict = None
-    requirements: List[str] = None
     project_files: dict = None
 
-    def as_markdown(self):
-        section_texts = []
-        if self.software_name:
-            section_texts.append(f"# {self.software_name}")
+    def as_markdown(self, excluded_sections=None):
 
-        for key, value in asdict(self).items():
-            if key == "software_name":
+        header = ""
+        if self.software_name:
+            header += f"# {self.software_name}"
+        if self.emoji_tagline:
+            header += f" {self.emoji_tagline}"
+        if header:
+            header += "\n\n"
+        if self.tagline:
+            header += f"**{self.tagline}**\n\n"
+        if self.short_description:
+            header += f"{self.short_description}\n\n"
+        if self.long_description:
+            header += f"{self.long_description}\n\n"
+
+        section_texts = []
+        skip_keys = [
+            "software_name",
+            "short_description",
+            "long_description",
+            "tagline",
+            "emoji_tagline",
+        ]
+        if excluded_sections:
+            skip_keys.extend(excluded_sections)
+
+        for field in fields(self):
+            key = field.name
+            value = getattr(self, key)
+            if key in skip_keys:
                 continue
             if value:
-                formatted_key = key.upper().replace("_", " ")
+                formatted_key = key.replace("_", " ").title()
                 section_text = f"## {formatted_key}\n{value}"
-                if isinstance(value, dict):
+                if hasattr(value, "as_markdown"):
+                    section_text = f"## {formatted_key}\n{value.as_markdown()}"
+                elif isinstance(value, dict):
                     subsection_texts = []
                     for subkey, subvalue in value.items():
                         subsection_text = f" - {subkey} - {subvalue}"
@@ -50,4 +87,4 @@ class SoftwareProjectDescription:
                 section_texts.append(section_text)
 
         doctext = "\n\n".join(section_texts)
-        return doctext
+        return header + doctext

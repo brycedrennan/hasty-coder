@@ -16,7 +16,7 @@ def configure_logging(level="INFO"):
         },
         "handlers": {
             "default": {
-                "level": "INFO",
+                "level": "DEBUG",
                 "formatter": "simple",
                 "class": "logging.StreamHandler",
                 "stream": "ext://sys.stdout",  # Default is stderr
