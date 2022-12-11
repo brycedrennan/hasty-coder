@@ -82,7 +82,7 @@ Based on the description above, {instructions}
 
 
 def generate_project_description():
-    prompt = "Write a very brief and concise idea for a small python project in a single, short sentence. Write as if it's a description of existing software. Make it something funny:"
+    prompt = "Write a very brief and concise idea for a small python project in a single, short sentence. Write as if it's a description of existing software. Do not use the project name in the description. Make it something funny:"
     description = LoggedOpenAI(temperature=0.8)(prompt).strip()
     logger.info("Yolo Idea: %s", description)
     return description
