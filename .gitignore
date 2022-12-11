@@ -9,3 +9,4 @@ dist
 .coverage
 .coveragerc
 .python-version
+.pytest-cache
