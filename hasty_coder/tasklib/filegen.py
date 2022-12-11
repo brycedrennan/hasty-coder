@@ -1,13 +1,13 @@
 import logging
 import re
 
-from hasty_coder.models import SoftwareProjectDescription
+from hasty_coder.models import SoftwareProjectPlan
 from hasty_coder.utils import LoggedOpenAI
 
 logger = logging.getLogger(__name__)
 
 
-def generate_file_contents(filepath, project_plan: SoftwareProjectDescription):
+def generate_file_contents(filepath, project_plan: SoftwareProjectPlan):
     description = project_plan.project_files.get(filepath, "")
     logger.info("Generating %s", filepath)
     handler = match_file_handler(filepath)
@@ -33,7 +33,7 @@ The {filepath} file is described as "{description}".
     return file_contents
 
 
-def gen_readme(filepath, description, project_plan: SoftwareProjectDescription):
+def gen_readme(filepath, description, project_plan: SoftwareProjectPlan):
     readme_md = project_plan.as_markdown(excluded_sections=["project_files"])
     bio = gen_hasty_bio()
     readme_md += f"""

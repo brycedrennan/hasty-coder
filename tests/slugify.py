@@ -12,6 +12,7 @@ from hasty_coder.utils import slugify
         ("Hello_World", "hello-world"),
         ("Hello World!", "hello-world"),
         ("Hello        World!", "hello-world"),
+        ("SockOMatic", "sock-o-matic"),
     ],
 )
 def test_slugify(input_string, expected_output):

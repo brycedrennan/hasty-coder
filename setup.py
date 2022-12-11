@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name="hasty-coder",
     version="0.0.1",
-    description="A command line tool that uses AI to write entire software projects from scratch (but the code is usually buggy and doesn't work)",
+    description="A command line tool that uses AI to write entire software projects from scratch. HastyCoder is your AI careless coding companion. ",
     author="Bryce Drennan",
     packages=["hasty_coder"],
     entry_points={
@@ -12,11 +12,5 @@ setup(
             "hc = hasty_coder.cli:route_cmd",
         ]
     },
-    install_requires=[
-        "click",
-        "langchain",
-        "openai",
-        "black",
-        "isort",
-    ],
+    install_requires=["black", "click", "isort", "langchain", "openai", "orjson"],
 )

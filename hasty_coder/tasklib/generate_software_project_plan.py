@@ -1,16 +1,18 @@
 import logging
 from dataclasses import is_dataclass
 
-from hasty_coder.models import SoftwareProjectDescription
+from hasty_coder.models import SoftwareProjectPlan
 from hasty_coder.tasklib.fragments import REQUIRED_PROJECT_FILES
 from hasty_coder.utils import LoggedOpenAI, phraseify
 
 logger = logging.getLogger(__name__)
 
 
-def flesh_out_project_description(short_description):
+def generate_project_plan(short_description=""):
+    if not short_description:
+        short_description = generate_project_description_short()
     short_description = rewrite_project_description(short_description)
-    project_plan = SoftwareProjectDescription(short_description=short_description)
+    project_plan = SoftwareProjectPlan(short_description=short_description)
     generation_plan = {
         "long_description": generate_project_description_long,
         "software_name": generate_project_name,
@@ -44,9 +46,9 @@ Use the format provided in the JSON template below. Replace the parts contained 
 JSON TEMPLATE:
 ```
 {{
-    "project_type": "<PROJECT_TYPE>",  # one of "webapp", "cli", "library", "mobile app", "desktop app"
-    "programming_language": <STR>,  # for webapps, cli, and libraries prefer python unless the project description says otherwise
-    "framework": <STR>,
+    "project_type": "<PROJECT_TYPE>",  # one of ["webapp", "cli", "library", "mobile app", "desktop app"]
+    "programming_language": <STR>,  # if project_type is one of  ["webapp", "cli", "library"] prefer python unless the project description says otherwise
+    "framework": <STR>,  # if project_type is webapp and programming_language is python, prefer flask unless the project description says otherwise
     "database": <null or STR>,
     "testing_framework": <STR>
 }}
@@ -81,7 +83,7 @@ Based on the description above, {instructions}
     return answer
 
 
-def generate_project_description():
+def generate_project_description_short():
     prompt = "Write a very brief and concise idea for a small python project in a single, short sentence. Write as if it's a description of existing software. Do not use the project name in the description. Make it something funny:"
     description = LoggedOpenAI(temperature=0.8)(prompt).strip()
     logger.info("Yolo Idea: %s", description)
@@ -101,7 +103,8 @@ def generate_project_description_long(project_plan):
 
 def rewrite_project_description(description):
     prompt = f"""
-Re-write the following description for a software project into a more clear and concise thought.
+Re-write the following description for a software project into a more clear and concise thought.  It should be written 
+as a description not a command.  It should be written in the present tense. 
 
 DESCRIPTION:
 {description}
@@ -118,7 +121,7 @@ def generate_project_name(project_plan):
         data_name="software_project_name",
         project_plan=project_plan,
         instructions=(
-            "Write a short and witty name for this project. It should be a complex noun phrase that communicates what type of data it deals with. "
+            "Write a short and witty name for this project. It should be a complex noun phrase that communicates what type of data it deals with. No colons or taglines."
             "\nGood Example: 'Hasty Coder' \nBad Example: 'Code Generator'"
             "\nGood Example: 'Acti-Planner' \nBad Example: 'Dynamic Automation Orchestration'"
         ),
@@ -154,10 +157,13 @@ def generate_project_emoji_tagline(project_plan):
 
 def generate_installation_instructions(project_plan):
     instructions = _meta_generate(
-        data_name="installation_instructions",
+        data_name="installation_example",
         project_plan=project_plan,
         instructions=(
-            "Write installation instructions as a single terminal command. Write with markdown formatting."
+            "Write an example of how to install the software as a single terminal command. Do not include the installation of dependencies or running tests. "
+            "Typically this would be either installing from a package manager or cloning a git repo and running a setup script. "
+            "But it could also mean downloading a file or installing a mobile app. "
+            "Write with markdown formatting."
         ),
         temperature=0.05,
     )
@@ -261,14 +267,14 @@ if __name__ == "__main__":
     # print(determine_programming_language("test", "test"))
     logging.basicConfig(level=logging.INFO)
 
-    # program_description = flesh_out_project_description(
+    # program_description = generate_project_plan(
     #     "flask-joker",
     #     "flask app that tells jokes using the openai client library (from pypi.org). doesn't use a database"
     # )
     # short_description = "a flask app that creates poetry based on a prompt from the user. it uses the openai client library from pypi.org"
-    _short_description = generate_project_description()
+    _short_description = generate_project_description_short()
     print(f"Description: {_short_description}")
-    program_description = flesh_out_project_description(_short_description)
+    program_description = generate_project_plan(_short_description)
     print("")
     print(program_description)
     print("")

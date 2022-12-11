@@ -1,10 +1,10 @@
-import json
 import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
 import openai.error
+import orjson
 from langchain import OpenAI
 
 logger = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def extract_json(text):
     text = text.strip().strip("`")
-    return json.loads(text)
+    return robust_json_loads(text)
 
 
 class LoggedOpenAI(OpenAI):
@@ -33,7 +33,7 @@ class LoggedOpenAI(OpenAI):
                 return total_response.strip()
             try:
                 return extract_json(last_response)
-            except json.JSONDecodeError:
+            except orjson.JSONDecodeError:
                 logger.exception("JSON DECODE ERROR: %s", last_response)
                 continue
             except openai.error.Timeout:
@@ -66,7 +66,7 @@ def parallel_run(func, iterable, kwargs=None, max_workers=10):
 
 def slugify(text):
     # camelcase to dash-separated
-    text = re.sub(r"([a-zA-Z])([A-Z])", r"\1-\2", text.strip())
+    text = re.sub(r"([A-Z])", r"-\1", text.strip())
 
     # replace any whitespace or punctuation with a dash
     text = re.sub(r"[\s_-]+", "-", text)
@@ -83,3 +83,28 @@ def phraseify(text):
     # remove non-alphanumeric characters
     text = re.sub(r"[^a-zA-Z0-9-]", "", text)
     return text.strip()
+
+
+def remove_last_comma_before_index(text, start_index):
+    # Find the index of the last comma before the start_index
+    last_comma_index = -1
+    for i in range(start_index - 1, -1, -1):
+        if text[i] == ",":
+            last_comma_index = i
+            break
+
+    if last_comma_index != -1:
+        return text[:last_comma_index] + text[last_comma_index + 1 :]
+
+    return text
+
+
+def robust_json_loads(json_string):
+    while True:
+        try:
+            return orjson.loads(json_string)
+        except orjson.JSONDecodeError as e:
+            if "trailing comma is not allowed" in str(e):
+                json_string = remove_last_comma_before_index(json_string, e.pos)
+                continue
+            raise e

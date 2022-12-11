@@ -2,7 +2,7 @@
 
 **Move Really Fast and Break Lots of Things!**
 
-HastyCoder is your AI careless coding companion. Hasty writes entire code repos based on your single sentence 
+HastyCoder is your AI careless coding companion. Hasty writes entire software projects based on your single sentence 
 description.
 
 Is it a good idea to use HastyCoder? Probably not. But you're gonna anyway aren't you..

@@ -1,6 +1,8 @@
 from dataclasses import dataclass, fields
 from typing import List
 
+from hasty_coder.utils import slugify
+
 
 @dataclass
 class SoftwareStack:
@@ -20,7 +22,7 @@ class SoftwareStack:
 
 
 @dataclass
-class SoftwareProjectDescription:
+class SoftwareProjectPlan:
     software_name: str = None
     short_description: str = None
     long_description: str = None
@@ -32,6 +34,10 @@ class SoftwareProjectDescription:
     todo: List[str] = None
     software_stack: SoftwareStack = None
     project_files: dict = None
+
+    @property
+    def slug(self):
+        return slugify(self.software_name)
 
     def as_markdown(self, excluded_sections=None):
 
@@ -70,6 +76,13 @@ class SoftwareProjectDescription:
                 section_text = f"## {formatted_key}\n{value}"
                 if hasattr(value, "as_markdown"):
                     section_text = f"## {formatted_key}\n{value.as_markdown()}"
+                elif key == "project_files":
+                    subsection_texts = []
+                    for subkey, subvalue in value.items():
+                        subsection_text = f" - `{subkey}` - {subvalue}"
+                        subsection_texts.append(subsection_text)
+                    subsection_text = "\n".join(subsection_texts)
+                    section_text = f"## {formatted_key}\n{subsection_text}"
                 elif isinstance(value, dict):
                     subsection_texts = []
                     for subkey, subvalue in value.items():

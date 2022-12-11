@@ -2,12 +2,12 @@ import os.path
 import pathlib
 from datetime import datetime
 
-from hasty_coder.models import SoftwareProjectDescription
+from hasty_coder.models import SoftwareProjectPlan
 from hasty_coder.tasklib.filegen import generate_file_contents
 from hasty_coder.utils import parallel_run, slugify
 
 
-def implement_project_plan(project_plan: SoftwareProjectDescription, projects_path):
+def implement_project_plan(project_plan: SoftwareProjectPlan, projects_path):
     project_folder_name = slugify(project_plan.software_name)
     project_path = create_project_skeleton(
         project_path=os.path.join(projects_path, project_folder_name),

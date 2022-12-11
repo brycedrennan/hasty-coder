@@ -38,7 +38,7 @@ isort==5.10.1
     #   -r tests/dev-requirements.in
     #   hasty-coder (setup.py)
     #   pylint
-langchain==0.0.33
+langchain==0.0.35
     # via hasty-coder (setup.py)
 lazy-object-proxy==1.8.0
     # via astroid
@@ -61,6 +61,8 @@ openai==0.25.0
     # via hasty-coder (setup.py)
 openpyxl==3.0.10
     # via openai
+orjson==3.8.3
+    # via hasty-coder (setup.py)
 packaging==22.0
     # via
     #   pytest
@@ -124,7 +126,7 @@ six==1.16.0
     # via python-dateutil
 snowballstemmer==2.2.0
     # via pydocstyle
-sqlalchemy==1.4.44
+sqlalchemy==1.4.45
     # via langchain
 termcolor==2.1.1
     # via pytest-sugar

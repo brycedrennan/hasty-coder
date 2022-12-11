@@ -38,6 +38,8 @@ lint:  ## Run the code linter.
 	@pylama
 	@echo -e "No linting errors - well done! ✨ 🍰 ✨"
 
+check: autoformat lint test  ## Run the autoformatter, linter, and tests.
+
 deploy:  ## Deploy the package to pypi.org
 	pip install twine wheel
 	-git tag $$(python setup.py -V)
