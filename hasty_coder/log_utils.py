@@ -2,6 +2,7 @@ import logging.config
 
 
 def configure_logging(level="INFO"):
+    """Configure logging with optional level parameter."""
     fmt = "%(message)s"
     if level == "DEBUG":
         fmt = "%(asctime)s [%(levelname)s] %(name)s:%(lineno)d: %(message)s"

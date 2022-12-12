@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def describe_code_snippet(code_snippet):
+    """Describe a code snippet and return a JSON dict of docstrings."""
     prompt = f"""
 Write a very-short, concise single-line docstring for each function and class below.
 
@@ -37,6 +38,7 @@ DOCSTRINGS (as json dict):
 
 
 def _add_comments_to_code_snippet(code_snippet_row):
+    """Add comments to a code snippet"""
     full_path, start_line_no, end_line_no, code_snippet = code_snippet_row
     docstring = describe_code_snippet(code_snippet)
     new_code_snippet = add_docstring(code_snippet, docstring)
@@ -65,6 +67,7 @@ def _remove_identical_lines_from_end(text_a, text_b):
 
 
 def add_comments_to_all_code_in_path(path):
+    """Add comments to all code in a given path."""
     # gather code snippets
     code_snippet_rows = []
     for (
@@ -95,6 +98,7 @@ def add_comments_to_all_code_in_path(path):
 
 
 def edit_file(filepath, start_line_no, end_line_no, injected_content):
+    """Edit a file by replacing a range of lines with new content."""
     with open(filepath, "r", encoding="utf-8") as f:
         lines = f.readlines()
     replacing = lines[start_line_no - 1 : end_line_no]

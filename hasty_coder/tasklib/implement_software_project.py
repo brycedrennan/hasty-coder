@@ -8,6 +8,7 @@ from hasty_coder.utils import parallel_run, slugify
 
 
 def implement_project_plan(project_plan: SoftwareProjectPlan, projects_path):
+    """Implement a software project plan by creating a project skeleton and generating file contents."""
     project_folder_name = slugify(project_plan.software_name)
     project_path = create_project_skeleton(
         project_path=os.path.join(projects_path, project_folder_name),
@@ -20,6 +21,7 @@ def implement_project_plan(project_plan: SoftwareProjectPlan, projects_path):
     ]
 
     def gen_and_save(filepath):
+        """Save generated file contents to filepath"""
         file_contents = generate_file_contents(filepath, project_plan)
         if file_contents:
             with open(os.path.join(project_path, filepath), "w", encoding="utf-8") as f:
@@ -31,6 +33,7 @@ def implement_project_plan(project_plan: SoftwareProjectPlan, projects_path):
 
 
 def create_project_skeleton(project_path, filepaths):
+    """Create a project skeleton with the given filepaths under the given project path."""
     # make sure all the paths will be created under the base path
     base_path = os.path.abspath(project_path)
     # if base_path already exists append a timestamp to the path

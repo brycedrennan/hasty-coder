@@ -16,4 +16,5 @@ from hasty_coder.utils import slugify
     ],
 )
 def test_slugify(input_string, expected_output):
+    """Test slugify function with various inputs and expected outputs"""
     assert slugify(input_string) == expected_output

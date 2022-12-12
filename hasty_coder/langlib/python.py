@@ -6,6 +6,7 @@ from io import BytesIO
 
 
 def extract_first_docstring(code_text):
+    """Extract the first docstring from a code text."""
     tokens = tokenize.tokenize(BytesIO(code_text.encode("utf-8")).readline)
 
     in_function_definition = False
@@ -32,6 +33,7 @@ def extract_first_docstring(code_text):
 
 
 def add_docstring(code_text, docstring_text):
+    """Add a docstring to a given code text."""
 
     tokens = tokenize.tokenize(BytesIO(code_text.encode("utf-8")).readline)
 
@@ -63,6 +65,7 @@ def add_docstring(code_text, docstring_text):
 
 
 def validate_python_ast_equal(code_text_a, code_text_b):
+    """Validate that two pieces of Python code have the same abstract syntax tree (AST)."""
     tree_a = ast.parse(textwrap.dedent(code_text_a))
     tree_b = ast.parse(textwrap.dedent(code_text_b))
     # print(ast.dump(tree_a))
@@ -86,6 +89,7 @@ def validate_python_ast_equal(code_text_a, code_text_b):
 
 
 def get_func_and_class_snippets(code: str):
+    """Return snippets of functions and classes from a given code string."""
     tree = ast.parse(code)
     lines = code.splitlines()
     for node in ast.walk(tree):
@@ -118,6 +122,7 @@ ignore_dirs = [
 
 
 def get_func_and_class_snippets_in_path(path):
+    """Return snippets of functions and classes from a given path"""
 
     for root, dirs, files in os.walk(path):
         # exclude directories in ignore_dirs by editing dirs in place

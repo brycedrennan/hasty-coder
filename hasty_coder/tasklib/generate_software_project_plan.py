@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def generate_project_plan(short_description=""):
+    """Generate a project plan from a short description."""
     if not short_description:
         short_description = generate_project_description_short()
     short_description = rewrite_project_description(short_description)
@@ -34,6 +35,7 @@ def generate_project_plan(short_description=""):
 
 
 def generate_software_stack(project_plan):
+    """Generate a software stack based on a given project plan."""
     prompt = f"""
 SOFTWARE PROJECT DESCRIPTION:
 ```
@@ -64,6 +66,7 @@ TECH STACK:
 def _meta_generate(
     data_name, project_plan, instructions, as_json=False, temperature=0.01
 ):
+    """Generate data based on a project plan and instructions, with optional json formatting and temperature control."""
     data_name_display = data_name.replace("_", " ").title()
     json_extra = " (in json format)" if as_json else ""
     prompt = f"""
@@ -84,6 +87,7 @@ Based on the description above, {instructions}
 
 
 def generate_project_description_short():
+    """Generate a humorous project description for a small python project."""
     prompt = "Write a very brief and concise idea for a small python project in a single, short sentence. Write as if it's a description of existing software. Do not use the project name in the description. Make it something funny:"
     description = LoggedOpenAI(temperature=0.8)(prompt).strip()
     logger.info("Yolo Idea: %s", description)
@@ -91,6 +95,7 @@ def generate_project_description_short():
 
 
 def generate_project_description_long(project_plan):
+    """Generate a long description for a project plan."""
     description = _meta_generate(
         data_name="long_description",
         project_plan=project_plan,
@@ -102,6 +107,7 @@ def generate_project_description_long(project_plan):
 
 
 def rewrite_project_description(description):
+    """Rewrite a software project description into a more clear and concise thought."""
     prompt = f"""
 Re-write the following description for a software project into a more clear and concise thought.  It should be written 
 as a description not a command.  It should be written in the present tense. 
@@ -117,6 +123,7 @@ RE-WRITTEN DESCRIPTION:
 
 
 def generate_project_name(project_plan):
+    """Generate a project name based on a project plan."""
     software_name = _meta_generate(
         data_name="software_project_name",
         project_plan=project_plan,
@@ -131,6 +138,7 @@ def generate_project_name(project_plan):
 
 
 def generate_project_tagline(project_plan):
+    """Generate a clever and witty tagline for a project plan."""
     return _meta_generate(
         data_name="tagline",
         project_plan=project_plan,
@@ -143,6 +151,7 @@ def generate_project_tagline(project_plan):
 
 
 def generate_project_emoji_tagline(project_plan):
+    """Generate an emoji tagline for a project plan"""
     emoji_tagline = _meta_generate(
         data_name="emoji_tagline",
         project_plan=project_plan,
@@ -156,6 +165,7 @@ def generate_project_emoji_tagline(project_plan):
 
 
 def generate_installation_instructions(project_plan):
+    """Generate installation instructions for a given project plan."""
     instructions = _meta_generate(
         data_name="installation_example",
         project_plan=project_plan,
@@ -172,6 +182,7 @@ def generate_installation_instructions(project_plan):
 
 
 def generate_quick_start(project_plan):
+    """Generate quick start instructions for a given project plan."""
     instructions = _meta_generate(
         data_name="usage_instructions",
         project_plan=project_plan,
@@ -185,6 +196,7 @@ def generate_quick_start(project_plan):
 
 
 def determine_programming_language(project_plan):
+    """Determine the programming language for a given project plan."""
     return _meta_generate(
         data_name="programming_language",
         project_plan=project_plan,
@@ -196,6 +208,7 @@ def determine_programming_language(project_plan):
 
 
 def generate_software_feature_list(project_plan):
+    """Generate a list of customer-oriented key features for a software project."""
     feature_list = _meta_generate(
         "components",
         project_plan=project_plan,
@@ -211,6 +224,7 @@ def generate_software_feature_list(project_plan):
 
 
 def generate_project_todo(project_plan):
+    """Generate a project to-do list from a project plan."""
     llm = LoggedOpenAI(temperature=0.02)
     prompt = f"""
 {project_plan.as_markdown()}
@@ -227,6 +241,7 @@ TODO LIST:
 
 
 def generate_project_file_structure(project_plan):
+    """Generate a project file structure based on a project plan."""
     llm = LoggedOpenAI(temperature=0.02)
     prompt = f"""
 {project_plan.as_markdown()}
