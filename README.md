@@ -28,3 +28,11 @@ Yolo Idea: "A program to help procrastinators avoid getting anything done -- the
 Project 'ProcrastinatorsJaunt' created at ~/projects/procrastinators-jaunt
 
 ```
+
+## But wait, there's more!
+
+Hasty isn't dangerous for every task! He can add docstrings to all your python functions. 
+```bash
+$ hasty-code add-python-docstrings ./my-project
+Found 59 code snippets in need of docstrings...
+```
