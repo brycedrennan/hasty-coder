@@ -4,6 +4,7 @@ PROJECT_ROOT_FILES = ("pyproject.toml", "setup.py", ".git")
 
 
 def find_project_root(starting_path, trigger_files=PROJECT_ROOT_FILES, max_depth=4):
+    """Find the root of a project by looking for trigger files."""
     trigger_files = set(trigger_files)
 
     current_path = os.path.abspath(starting_path)

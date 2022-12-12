@@ -1,5 +1,6 @@
 import logging
 import re
+import time
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
@@ -26,7 +27,12 @@ class LoggedOpenAI(OpenAI):
         total_response = ""
         for i in range(6):
             logger.debug("STARTPROMPT\n%s\nENDPROMPT", prompt)
-            last_response = super().__call__(prompt + total_response, stop)
+            try:
+                last_response = super().__call__(prompt + total_response, stop)
+            except openai.error.RateLimitError:
+                logger.warning("Rate limit error, pausing and then retrying")
+                time.sleep(10)
+                continue
             total_response += last_response
             logger.debug("STARTANSWER:\n%s\nENDANSWER", last_response)
             if not as_json:
@@ -42,7 +48,7 @@ class LoggedOpenAI(OpenAI):
 
         raise Exception("Failed to get valid JSON")
 
-    def multicall(self, prompts, stop=None, as_json=False, max_workers=10):
+    def multicall(self, prompts, stop=None, as_json=False, max_workers=2):
         return parallel_run(
             self.__call__,
             prompts,
@@ -50,12 +56,8 @@ class LoggedOpenAI(OpenAI):
             max_workers=max_workers,
         )
 
-    @staticmethod
-    def cached_call(prompt, stop=None, as_json=False):
-        pass
 
-
-def parallel_run(func, iterable, kwargs=None, max_workers=10):
+def parallel_run(func, iterable, kwargs=None, max_workers=2):
     if kwargs is None:
         kwargs = {}
     f = partial(func, **kwargs)
@@ -105,6 +107,9 @@ def robust_json_loads(json_string):
             return orjson.loads(json_string)
         except orjson.JSONDecodeError as e:
             if "trailing comma is not allowed" in str(e):
+                json_string = remove_last_comma_before_index(json_string, e.pos)
+                continue
+            if "unexpected end of data" in str(e):
                 json_string = remove_last_comma_before_index(json_string, e.pos)
                 continue
             raise e

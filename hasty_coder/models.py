@@ -1,4 +1,5 @@
 from dataclasses import dataclass, fields
+from textwrap import dedent
 from typing import List
 
 from hasty_coder.utils import slugify
@@ -13,11 +14,13 @@ class SoftwareStack:
     testing_tooling: List[str] = None
 
     def as_markdown(self):
-        md = f"""
-- Programming Languages: **{self.primary_programming_language}**. {", ".join(self.secondary_programming_languages)}
-- Frameworks: **{self.primary_framework}**. {", ".join(self.secondary_frameworks)}
-- Testing Tooling: {", ".join(self.testing_tooling)}
+        md = dedent(
+            f"""
+    - Programming Languages: **{self.primary_programming_language}**. {", ".join(self.secondary_programming_languages)}
+    - Frameworks: **{self.primary_framework}**. {", ".join(self.secondary_frameworks)}
+    - Testing Tooling: {", ".join(self.testing_tooling)}
         """
+        )
         return md.strip()
 
 
