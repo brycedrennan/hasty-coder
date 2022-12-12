@@ -3,6 +3,7 @@ from hasty_coder.tasklib.implement_software_project import implement_project_pla
 
 
 def write_code(parent_folder, description="", show_work=True):
+    """Generate and implement a project plan for a software project in a given parent folder."""
     description = description.strip()
 
     program_description = generate_project_plan(description)
@@ -13,6 +14,7 @@ def write_code(parent_folder, description="", show_work=True):
 
 
 def make_repo_plan(description=None):
+    """Generate and print a project plan as markdown."""
     project_description = generate_project_plan(description)
     print(project_description.as_markdown())
 

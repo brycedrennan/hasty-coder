@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def generate_file_contents(filepath, project_plan: SoftwareProjectPlan):
+    """Generate file contents for a given filepath and SoftwareProjectPlan object."""
     description = project_plan.project_files.get(filepath, "")
     logger.info("Generating %s", filepath)
     handler = match_file_handler(filepath)
@@ -34,6 +35,7 @@ The {filepath} file is described as "{description}".
 
 
 def gen_readme(filepath, description, project_plan: SoftwareProjectPlan):
+    """Generate a README.md file from a SoftwareProjectPlan object."""
     readme_md = project_plan.as_markdown(excluded_sections=["project_files"])
     bio = gen_hasty_bio()
     readme_md += f"""
@@ -46,6 +48,7 @@ def gen_readme(filepath, description, project_plan: SoftwareProjectPlan):
 
 
 def gen_hasty_bio():
+    """Generate a humorous bio for an AI named Hasty."""
     prompt = """
 Write a humorous bio for an AI named Hasty that writes a lot of code but doesn't do a good job.  Allude to the many disasters Hasty has caused. Hasty is a big fan of the phrase "move fast and break things". But he does meet deadlines! Write it in first-person tense. 
 """
@@ -55,6 +58,7 @@ Write a humorous bio for an AI named Hasty that writes a lot of code but doesn't
 
 
 def match_file_handler(filepath):
+    """Return the handler associated with the given filepath, or None if no match is found."""
     filename = filepath.split("/")[-1]
     for pattern, handler in FILENAME_PATTERN_HOOKS.items():
         if re.match(pattern, filename, flags=re.IGNORECASE):

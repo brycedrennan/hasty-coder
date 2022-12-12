@@ -2,6 +2,7 @@ from hasty_coder.models import SoftwareStack
 
 
 def test_software_stack_as_markdown():
+    """Return a markdown representation of a SoftwareStack object."""
     software_stack = SoftwareStack(
         primary_programming_language="Python",
         secondary_programming_languages=["JavaScript", "Go"],

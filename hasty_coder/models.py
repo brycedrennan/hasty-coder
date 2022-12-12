@@ -1,4 +1,5 @@
 from dataclasses import dataclass, fields
+from textwrap import dedent
 from typing import List
 
 from hasty_coder.utils import slugify
@@ -6,6 +7,8 @@ from hasty_coder.utils import slugify
 
 @dataclass
 class SoftwareStack:
+    """Define a SoftwareStack class to store software stack information."""
+
     primary_programming_language: str = None
     secondary_programming_languages: List[str] = None
     primary_framework: str = None
@@ -13,16 +16,21 @@ class SoftwareStack:
     testing_tooling: List[str] = None
 
     def as_markdown(self):
-        md = f"""
-- Programming Languages: **{self.primary_programming_language}**. {", ".join(self.secondary_programming_languages)}
-- Frameworks: **{self.primary_framework}**. {", ".join(self.secondary_frameworks)}
-- Testing Tooling: {", ".join(self.testing_tooling)}
+        """Return a markdown string representation of the object."""
+        md = dedent(
+            f"""
+    - Programming Languages: **{self.primary_programming_language}**. {", ".join(self.secondary_programming_languages)}
+    - Frameworks: **{self.primary_framework}**. {", ".join(self.secondary_frameworks)}
+    - Testing Tooling: {", ".join(self.testing_tooling)}
         """
+        )
         return md.strip()
 
 
 @dataclass
 class SoftwareProjectPlan:
+    """Define a SoftwareProjectPlan class"""
+
     software_name: str = None
     short_description: str = None
     long_description: str = None
@@ -37,9 +45,11 @@ class SoftwareProjectPlan:
 
     @property
     def slug(self):
+        """Return a slugified version of the software name."""
         return slugify(self.software_name)
 
     def as_markdown(self, excluded_sections=None):
+        """Return Markdown representation of Software object"""
 
         header = ""
         if self.software_name:
