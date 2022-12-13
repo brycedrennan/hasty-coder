@@ -3,7 +3,7 @@ from hasty_coder.tasklib.generate_software_project_description import (
     generate_project_description,
 )
 from hasty_coder.tasklib.implement_software_project import implement_project_plan
-
+from hasty_coder.tasklib.generate_existing_project_description import generate_existing_project_description
 
 def write_code(parent_folder, description="", show_work=True):
     description = description.strip()
@@ -15,6 +15,11 @@ def write_code(parent_folder, description="", show_work=True):
         print(program_description.as_markdown())
     project_path = implement_project_plan(program_description, parent_folder)
     print(f"Project '{program_description.software_name}' created at {project_path}")
+
+def add_to_repo(description, repo_path, file):
+    description = description.strip()
+
+    project_description = generate_existing_project_description(description, repo_path, file)
 
 
 # if __name__ == "__main__":

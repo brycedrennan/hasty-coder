@@ -4,7 +4,7 @@ from pathlib import Path
 import click
 
 from hasty_coder.log_utils import configure_logging
-from hasty_coder.main import write_code
+from hasty_coder.main import write_code, add_to_repo
 from hasty_coder.tasklib.generate_software_project_description import (
     flesh_out_project_description,
 )
@@ -27,6 +27,14 @@ def make_repo_plan(description):
     project_description = flesh_out_project_description(description)
     print(project_description.as_markdown())
 
+
+@cli.command("existing-repo")
+@click.argument("description")
+@click.argument("repo_path")
+@click.argument("file")
+def make_repo(description, repo_path, file):
+    add_to_repo(description, repo_path, file, show_work=True)
+    # write_code(Path("."), description, show_work=True)
 
 def route_cmd():
     configure_logging()
