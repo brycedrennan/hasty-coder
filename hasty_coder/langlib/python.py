@@ -2,7 +2,10 @@ import ast
 import os.path
 import textwrap
 import tokenize
+from dataclasses import dataclass
 from io import BytesIO
+
+from black import FileMode, format_str
 
 
 def extract_first_docstring(code_text):
@@ -88,10 +91,11 @@ def validate_python_ast_equal(code_text_a, code_text_b):
         raise ValueError("ASTs are not equal")
 
 
-def get_func_and_class_snippets(code: str):
+def get_func_and_class_snippets(code: str, filepath: str = None):
     """Return snippets of functions and classes from a given code string."""
     tree = ast.parse(code)
     lines = code.splitlines()
+    snippets = []
     for node in ast.walk(tree):
         if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
             start_line = len(lines) + 1
@@ -102,10 +106,15 @@ def get_func_and_class_snippets(code: str):
                 end_line = max(end_line, decorator.end_lineno)
             start_line = min(start_line, node.lineno)
             end_line = max(end_line, node.end_lineno)
-
-            yield start_line, end_line, "\n".join(
-                lines[start_line - 1 : end_line]
-            ) + "\n"
+            code_text = "\n".join(lines[start_line - 1 : end_line]) + "\n"
+            snippet = CodeSnippet(
+                code_text=code_text,
+                start_line=start_line,
+                end_line=end_line,
+                filepath=filepath,
+            )
+            snippets.append(snippet)
+    return snippets
 
 
 # todo pull in gitignore files from https://github.com/github/gitignore
@@ -121,26 +130,77 @@ ignore_dirs = [
 ]
 
 
-def get_func_and_class_snippets_in_path(path):
-    """Return snippets of functions and classes from a given path"""
+def format_code(code_text):
+    return format_str(code_text, mode=FileMode())
 
+
+@dataclass
+class CodeSnippet:
+    code_text: str
+    start_line: int = None
+    end_line: int = None
+    filepath: str = None
+    snippet_type: str = None
+
+    @property
+    def docstring(self):
+        return extract_first_docstring(self.code_text)
+
+    @property
+    def formatted_code_text(self):
+        code_text = textwrap.dedent(self.code_text)
+        return format_code(code_text)
+
+    @property
+    def assigned_variables(self):
+        """
+        Use ast to find assigned variables in a code snippet
+        """
+        tree = ast.parse(self.code_text)
+        variables = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        variables.append(target.id)
+
+    @property
+    def references(self):
+        """
+        Use ast to find all references in the function body
+        """
+        tree = ast.parse(self.code_text)
+        refs = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Name):
+                refs.append(node.id)
+        return refs
+
+
+def walk_nonignored_files(path, extensions=None):
     for root, dirs, files in os.walk(path):
         # exclude directories in ignore_dirs by editing dirs in place
         dirs[:] = [
             d for d in dirs if d not in ignore_dirs and not d.endswith(".egg-info")
         ]
-
         for file in files:
-            if not file.endswith(".py"):
-                continue
-
             full_path = os.path.join(root, file)
+            if extensions is not None:
+                if not any(full_path.endswith(e) for e in extensions):
+                    continue
 
-            with open(full_path, "r", encoding="utf-8") as f:
-                file_sourcecode = f.read()
-                for (
-                    start_line_no,
-                    end_line_no,
-                    code_snippet,
-                ) in get_func_and_class_snippets(file_sourcecode):
-                    yield full_path, start_line_no, end_line_no, code_snippet
+            yield full_path
+
+
+def walk_python_files(path):
+    return walk_nonignored_files(path, extensions=[".py"])
+
+
+def get_func_and_class_snippets_in_path(path):
+    """Return snippets of functions and classes from a given path"""
+    for full_path in walk_nonignored_files(path, extensions=".py"):
+        with open(full_path, "r", encoding="utf-8") as f:
+            file_sourcecode = f.read()
+
+        for snippet in get_func_and_class_snippets(file_sourcecode, filepath=full_path):
+            yield snippet

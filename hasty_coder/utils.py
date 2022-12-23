@@ -4,6 +4,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
+import openai
 import openai.error
 import orjson
 from langchain import OpenAI
@@ -52,15 +53,6 @@ class LoggedOpenAI(OpenAI):
                 continue
 
         raise Exception("Failed to get valid JSON")
-
-    def multicall(self, prompts, stop=None, as_json=False, max_workers=2):
-        """Run multiple calls in parallel with given prompts, stop, as_json, and max_workers."""
-        return parallel_run(
-            self.__call__,
-            prompts,
-            {"stop": stop, "as_json": as_json},
-            max_workers=max_workers,
-        )
 
 
 def parallel_run(func, iterable, kwargs=None, max_workers=2):

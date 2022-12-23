@@ -12,10 +12,19 @@ from hasty_coder.tasklib.generate_software_project_plan import generate_project_
 
 @click.group()
 def cli():
-    """Create a command-line interface for the application."""
+    """
+    Quickly write probably wrong code! 💥
+
+    Shortcuts:
+
+    `hc filename.txt "optional description"  (writes a whole file)
+
+    `hc dirname/` "optional description"     (writes a whole project)
+
+    """
 
 
-@cli.command("add-python-docstrings")
+@cli.command("comments")
 @click.argument("path", type=click.Path(exists=True))
 def add_docstrings(path):
     """Add docstrings to all python files in PATH."""
@@ -28,9 +37,10 @@ def add_docstrings(path):
 
 @cli.command("project")
 @click.argument("description")
-def make_project(description):
+@click.argument("path", type=click.Path(exists=True), default=".")
+def make_project(description, path):
     """Create a project with the given description."""
-    write_code(Path("."), description, show_work=True)
+    write_code(Path(path), description, show_work=True)
 
 
 @cli.command("project-plan")
@@ -42,6 +52,26 @@ def make_project_plan(description):
     with open(filename, "w", encoding="utf-8") as f:
         f.write(project_description.as_markdown())
     print(f"\n\nProject plan written to {filename}")
+
+
+@cli.command("lint")
+@click.argument("path", type=click.Path(exists=True), default=".")
+def lint(path):
+    """AI linting of a file or path"""
+
+
+@cli.command("file")
+@click.argument("path", type=click.Path(exists=True), default=".")
+@click.argument("description", required=False)
+def mkfile(path):
+    """Write a single file"""
+
+
+@cli.command("test")
+@click.argument("path", type=click.Path(exists=True), default=".")
+@click.argument("description", required=False)
+def test(path):
+    """Write tests"""
 
 
 def route_cmd():
@@ -57,8 +87,8 @@ def route_cmd():
             print("YOLO! 😎🤘🏼👊")
             sys.argv[1] = "project"
             sys.argv.append("")
-        else:
-            sys.argv.insert(1, "project")
+        # else:
+        #     sys.argv.insert(1, "project")
     cli()
 
 
