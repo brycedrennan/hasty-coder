@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 
 from hasty_coder.log_utils import configure_logging
-from hasty_coder.main import write_code
+from hasty_coder.main import write_file, write_project
 from hasty_coder.tasklib.add_comments import add_comments_to_all_code_in_path
 from hasty_coder.tasklib.generate_software_project_plan import generate_project_plan
 
@@ -40,7 +40,7 @@ def add_docstrings(path):
 @click.argument("path", type=click.Path(exists=True), default=".")
 def make_project(description, path):
     """Create a project with the given description."""
-    write_code(Path(path), description, show_work=True)
+    write_project(Path(path), description, show_work=True)
 
 
 @cli.command("project-plan")
@@ -61,10 +61,11 @@ def lint(path):
 
 
 @cli.command("file")
-@click.argument("path", type=click.Path(exists=True), default=".")
+@click.argument("path", type=click.Path(exists=False), required=True)
 @click.argument("description", required=False)
-def mkfile(path):
+def mkfile(path, description):
     """Write a single file"""
+    write_file(Path(path).absolute(), description=description)
 
 
 @cli.command("test")
@@ -87,6 +88,9 @@ def route_cmd():
             print("YOLO! 😎🤘🏼👊")
             sys.argv[1] = "project"
             sys.argv.append("")
+        elif "." in sys.argv[1]:
+            sys.argv.insert(1, "file")
+
         # else:
         #     sys.argv.insert(1, "project")
     cli()

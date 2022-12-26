@@ -25,6 +25,7 @@ def completion(
 ):
     """Use OpenAI's API to auto-complete a prompt."""
     prompt = prompt.strip()
+
     total_response = ""
     for i in range(6):
         logger.debug("STARTPROMPT\n%s\nENDPROMPT", prompt)

@@ -1,5 +1,6 @@
 import logging
 import re
+from pathlib import Path
 
 from hasty_coder.langlib import python
 from hasty_coder.models import SoftwareProjectPlan
@@ -12,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 def generate_file_contents(filepath, project_plan: SoftwareProjectPlan):
     """Generate file contents for a given filepath and SoftwareProjectPlan object."""
-    description = project_plan.project_files.get(filepath, "")
+    filepath = Path(filepath)
+    description = project_plan.project_files.get(str(filepath), "")
     logger.info("Generating %s", filepath)
     handler = match_file_handler(filepath)
     if handler:
@@ -29,12 +31,13 @@ The {filepath} file is described as "{description}".
 """
     llm = LoggedOpenAI(temperature=0.01)
     file_contents = None
+    print(prompt)
     for i in range(3):
         file_contents = llm(prompt, stop=[end_token])
         if file_contents:
             break
 
-    if filepath.endswith(".py"):
+    if filepath.name.endswith(".py"):
         file_contents = python.format_code(file_contents)
 
     return file_contents
@@ -42,7 +45,7 @@ The {filepath} file is described as "{description}".
 
 def match_file_handler(filepath):
     """Return the handler associated with the given filepath, or None if no match is found."""
-    filename = filepath.split("/")[-1]
+    filename = Path(filepath).name
     for pattern, handler in FILENAME_PATTERN_HOOKS.items():
         if re.match(pattern, filename, flags=re.IGNORECASE):
             return handler

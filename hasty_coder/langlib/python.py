@@ -7,9 +7,15 @@ from io import BytesIO
 
 from black import FileMode, format_str
 
+from hasty_coder.filewalk import get_nonignored_file_paths
+
 
 def extract_first_docstring(code_text):
-    """Extract the first docstring from a code text."""
+    """
+    Extract the first docstring from a code text.
+
+    todo: should I have used ast.get_docstring?
+    """
     tokens = tokenize.tokenize(BytesIO(code_text.encode("utf-8")).readline)
 
     in_function_definition = False
@@ -67,6 +73,58 @@ def add_docstring(code_text, docstring_text):
     return code_text
 
 
+def get_file_docstring(path):
+    """Return the docstring of a given Python file."""
+    with open(path, "r", encoding="utf-8") as f:
+        file_sourcecode = f.read()
+    mod_ast = ast.parse(file_sourcecode)
+    return ast.get_docstring(mod_ast)
+
+
+def add_docstring_to_file(filename, docstring):
+    with open(filename, "r", encoding="utf-8") as f:
+        file_sourcecode = f.read()
+    tree = ast.parse(file_sourcecode)
+
+    tree.doc = docstring
+    ast.fix_missing_locations(tree)
+
+    code = ast.unparse(tree)
+
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(code)
+
+
+def add_docstring_to_sourcecode(sourcecode, docstring):
+    tokens = tokenize.tokenize(BytesIO(sourcecode.encode("utf-8")).readline)
+    new_tokens = []
+    prev_token = None
+    token_line_offset = 0
+    docstring_linecount = docstring.count("\n") + 1
+    for i, token in enumerate(tokens):
+        if prev_token and prev_token.type == tokenize.ENCODING:
+            docstring_wrapped = f'"""{docstring}"""\n'
+            doc_token = tokenize.TokenInfo(
+                type=tokenize.STRING,
+                string=docstring_wrapped,
+                start=(prev_token.end[0] + 1, 0),
+                end=(prev_token.end[0] + 1 + docstring_linecount, 0),
+                line=docstring_wrapped,
+            )
+            token_line_offset = docstring_linecount
+            new_tokens.append(doc_token)
+
+        new_token = token._replace(
+            start=(token.start[0] + token_line_offset, token.start[1]),
+            end=(token.end[0] + token_line_offset, token.end[1]),
+        )
+
+        new_tokens.append(new_token)
+        prev_token = new_token
+
+    return tokenize.untokenize(new_tokens).decode("utf-8")
+
+
 def validate_python_ast_equal(code_text_a, code_text_b):
     """Validate that two pieces of Python code have the same abstract syntax tree (AST)."""
     tree_a = ast.parse(textwrap.dedent(code_text_a))
@@ -117,19 +175,6 @@ def get_func_and_class_snippets(code: str, filepath: str = None):
     return snippets
 
 
-# todo pull in gitignore files from https://github.com/github/gitignore
-ignore_dirs = [
-    "venv",
-    ".git",
-    "node_modules",
-    "__pycache__",
-    "build",
-    ".idea",
-    "dist",
-    "",
-]
-
-
 def format_code(code_text):
     return format_str(code_text, mode=FileMode())
 
@@ -177,28 +222,14 @@ class CodeSnippet:
         return refs
 
 
-def walk_nonignored_files(path, extensions=None):
-    for root, dirs, files in os.walk(path):
-        # exclude directories in ignore_dirs by editing dirs in place
-        dirs[:] = [
-            d for d in dirs if d not in ignore_dirs and not d.endswith(".egg-info")
-        ]
-        for file in files:
-            full_path = os.path.join(root, file)
-            if extensions is not None:
-                if not any(full_path.endswith(e) for e in extensions):
-                    continue
-
-            yield full_path
-
-
 def walk_python_files(path):
-    return walk_nonignored_files(path, extensions=[".py"])
+    return get_nonignored_file_paths(path, extensions=[".py"])
 
 
 def get_func_and_class_snippets_in_path(path):
     """Return snippets of functions and classes from a given path"""
-    for full_path in walk_nonignored_files(path, extensions=".py"):
+    for rel_path in get_nonignored_file_paths(path, extensions=[".py"]):
+        full_path = os.path.join(path, rel_path)
         with open(full_path, "r", encoding="utf-8") as f:
             file_sourcecode = f.read()
 

@@ -10,3 +10,5 @@ dist
 .coveragerc
 .python-version
 .pytest-cache
+.git
+.pytest_cache
