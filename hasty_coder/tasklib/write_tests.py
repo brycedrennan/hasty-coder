@@ -1,4 +1,6 @@
 """
+Write tests.
+
 Steps to write a unit test for a single function
   - autoformat code (maintain indentation)
   - obtain context
@@ -31,6 +33,7 @@ Steps to write a unit test for a single function
 """
 
 from hasty_coder import openai_cli
+from hasty_coder.langlib.python import get_func_and_class_snippets_in_path
 
 
 def write_test(code_snippet, project_plan=None):
@@ -44,6 +47,18 @@ CODE SNIPPET:
 ```
 
 UNIT TESTS:"""
-    print(prompt)
     test_code = openai_cli.completion(prompt)
     return test_code
+
+
+def build_out_test_suite(path):
+    pass
+
+
+def enumerate_existing_tests(path):
+    for snippet in get_func_and_class_snippets_in_path(path):
+        pass
+
+
+if __name__ == "__main__":
+    enumerate_existing_tests("/Users/bryce/projects/hasty-coder")

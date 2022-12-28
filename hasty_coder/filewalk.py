@@ -52,7 +52,7 @@ __pypackages__
 def load_gitignore_spec_at_path(path):
     gitignore_path = os.path.join(path, ".gitignore")
     if os.path.exists(gitignore_path):
-        with open(gitignore_path, "r", encoding="utf-8") as f:
+        with open(gitignore_path, encoding="utf-8") as f:
             patterns = f.read().split("\n")
         ignore_spec = pathspec.PathSpec.from_lines("gitwildmatch", patterns)
     else:
@@ -60,7 +60,7 @@ def load_gitignore_spec_at_path(path):
     return ignore_spec
 
 
-def get_nonignored_file_paths(directory, gitignore_dict=None, extensions=tuple()):
+def get_nonignored_file_paths(directory, gitignore_dict=None, extensions=()):
     return_relative = False
     if gitignore_dict is None:
         gitignore_dict = {}
@@ -77,14 +77,15 @@ def get_nonignored_file_paths(directory, gitignore_dict=None, extensions=tuple()
             continue
 
         if entry.is_file():
-            if any(entry.path.endswith(ext) for ext in extensions):
-                continue
-
-            file_paths.append(entry.path)
+            if extensions:
+                if any(entry.path.endswith(ext) for ext in extensions):
+                    file_paths.append(entry.path)
+            else:
+                file_paths.append(entry.path)
 
         elif entry.is_dir():
             subdir_file_paths = get_nonignored_file_paths(
-                entry.path, gitignore_dict=gitignore_dict
+                entry.path, gitignore_dict=gitignore_dict, extensions=extensions
             )
             file_paths.extend(subdir_file_paths)
     if return_relative:

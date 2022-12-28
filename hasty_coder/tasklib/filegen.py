@@ -20,20 +20,19 @@ def generate_file_contents(filepath, project_plan: SoftwareProjectPlan):
     if handler:
         return handler(filepath, description, project_plan)
 
-    end_token = "ENDOFFILE_ZZZ"
+    stopword = "ENDOFFILE_ZZZ"
     prompt = f"""
 {project_plan.as_markdown()}
 
 INSTRUCTIONS
-Based on the description above. Write the contents of the {filepath} file. Denote the end of the file with the string "{end_token}"
+Based on the description above. Write the contents of the {filepath} file. Denote the end of the file with the string "{stopword}"
 The {filepath} file is described as "{description}".
 {filepath} FILE CONTENTS:
 """
     llm = LoggedOpenAI(temperature=0.01)
     file_contents = None
-    print(prompt)
     for i in range(3):
-        file_contents = llm(prompt, stop=[end_token])
+        file_contents = llm(prompt, stop=[stopword])
         if file_contents:
             break
 

@@ -26,8 +26,7 @@ init: require_pyenv  ## Setup a dev environment for local development.
 
 af: autoformat  ## Alias for `autoformat`
 autoformat:  ## Run the autoformatter.
-	@pycln . --all --quiet --extend-exclude __init__\.py
-	@isort --atomic --profile black .
+	@-ruff --extend-ignore ANN,ARG001,C90,DTZ,D100,D101,D102,D103,D202,D203,D212,D415,E501,RET504,S101 --extend-select C,D400,ERA,I,T201,UP,W --fix .
 	@black .
 
 test:  ## Run the tests.
@@ -46,7 +45,6 @@ deploy:  ## Deploy the package to pypi.org
 	git push --tags
 	rm -rf dist
 	python setup.py bdist_wheel
-	#python setup.py sdist
 	@echo 'pypi.org Username: '
 	@read username && twine upload --verbose dist/* -u $$username;
 	rm -rf build

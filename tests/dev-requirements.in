@@ -1,7 +1,5 @@
 black
 coverage
-isort
-pycln
 pydocstyle
 pylama
 pylint
@@ -9,3 +7,4 @@ pytest
 pytest-randomly
 pytest-sugar
 responses
+ruff

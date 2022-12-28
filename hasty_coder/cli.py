@@ -13,7 +13,7 @@ from hasty_coder.tasklib.generate_software_project_plan import generate_project_
 @click.group()
 def cli():
     """
-    Quickly write probably wrong code! 💥
+    Quickly write probably wrong code! 💥.
 
     Shortcuts:
 
@@ -51,20 +51,19 @@ def make_project_plan(description):
     filename = f"{project_description.slug}-plan.md"
     with open(filename, "w", encoding="utf-8") as f:
         f.write(project_description.as_markdown())
-    print(f"\n\nProject plan written to {filename}")
 
 
 @cli.command("lint")
 @click.argument("path", type=click.Path(exists=True), default=".")
 def lint(path):
-    """AI linting of a file or path"""
+    """AI linting of a file or path."""
 
 
 @cli.command("file")
 @click.argument("path", type=click.Path(exists=False), required=True)
 @click.argument("description", required=False)
 def mkfile(path, description):
-    """Write a single file"""
+    """Write a single file."""
     write_file(Path(path).absolute(), description=description)
 
 
@@ -72,11 +71,11 @@ def mkfile(path, description):
 @click.argument("path", type=click.Path(exists=True), default=".")
 @click.argument("description", required=False)
 def test(path):
-    """Write tests"""
+    """Write tests."""
 
 
 def route_cmd():
-    """Route command line arguments to appropriate subcommand"""
+    """Route command line arguments to appropriate subcommand."""
     configure_logging()
     if len(sys.argv) == 2:
         subcommands = set(cli.commands.keys())
@@ -85,14 +84,11 @@ def route_cmd():
             return
 
         if sys.argv[1].lower().startswith("yolo"):
-            print("YOLO! 😎🤘🏼👊")
             sys.argv[1] = "project"
             sys.argv.append("")
         elif "." in sys.argv[1]:
             sys.argv.insert(1, "file")
 
-        # else:
-        #     sys.argv.insert(1, "project")
     cli()
 
 

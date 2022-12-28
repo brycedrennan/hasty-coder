@@ -38,7 +38,7 @@ DOCSTRINGS (as json dict):
 
 
 def _add_comments_to_code_snippet(code_snippet_row):
-    """Add comments to a code snippet"""
+    """Add comments to a code snippet."""
     full_path, start_line_no, end_line_no, code_snippet = code_snippet_row
     docstring = describe_code_snippet(code_snippet)
     new_code_snippet = add_docstring(code_snippet, docstring)
@@ -99,13 +99,9 @@ def add_comments_to_all_code_in_path(path):
 
 def edit_file(filepath, start_line_no, end_line_no, injected_content):
     """Edit a file by replacing a range of lines with new content."""
-    with open(filepath, "r", encoding="utf-8") as f:
+    with open(filepath, encoding="utf-8") as f:
         lines = f.readlines()
     replacing = lines[start_line_no - 1 : end_line_no]
-    print("REPLACING:")
-    print("|" + "".join(replacing) + "|")
-    print("WITH:")
-    print(f"|{injected_content}|")
     lines[start_line_no - 1 : end_line_no] = injected_content.splitlines(keepends=True)
 
     with open(filepath, "w", encoding="utf-8") as f:

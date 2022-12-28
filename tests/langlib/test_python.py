@@ -54,5 +54,3 @@ def test_get_func_and_class_snippets():
 @pytest.mark.parametrize("sourcecode", sample_code_params)
 def test_add_docstring_to_sourcecode(sourcecode):
     new_code = add_docstring_to_sourcecode(sourcecode, "added docstring")
-    # new_code = format_code(new_code)
-    print(new_code)

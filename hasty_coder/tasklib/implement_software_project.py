@@ -21,7 +21,7 @@ def implement_project_plan(project_plan: SoftwareProjectPlan, projects_path):
     ]
 
     def gen_and_save(filepath):
-        """Save generated file contents to filepath"""
+        """Save generated file contents to filepath."""
         file_contents = generate_file_contents(filepath, project_plan)
         if file_contents:
             with open(os.path.join(project_path, filepath), "w", encoding="utf-8") as f:

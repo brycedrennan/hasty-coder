@@ -1,6 +1,5 @@
 from dataclasses import dataclass, fields
 from textwrap import dedent
-from typing import List
 
 from hasty_coder.utils import slugify
 
@@ -10,10 +9,10 @@ class SoftwareStack:
     """Define a SoftwareStack class to store software stack information."""
 
     primary_programming_language: str = None
-    secondary_programming_languages: List[str] = None
+    secondary_programming_languages: list[str] = None
     primary_framework: str = None
-    secondary_frameworks: List[str] = None
-    testing_tooling: List[str] = None
+    secondary_frameworks: list[str] = None
+    testing_tooling: list[str] = None
 
     def as_markdown(self):
         """Return a markdown string representation of the object."""
@@ -29,7 +28,7 @@ class SoftwareStack:
 
 @dataclass
 class SoftwareProjectPlan:
-    """Define a SoftwareProjectPlan class"""
+    """Define a SoftwareProjectPlan class."""
 
     software_name: str = None
     short_description: str = None
@@ -39,7 +38,7 @@ class SoftwareProjectPlan:
     installation_instructions: str = None
     quick_start: str = None
     features: dict = None
-    todo: List[str] = None
+    todo: list[str] = None
     software_stack: SoftwareStack = None
     project_files: dict = None
 
@@ -49,7 +48,7 @@ class SoftwareProjectPlan:
         return slugify(self.software_name)
 
     def as_markdown(self, excluded_sections=None):
-        """Return Markdown representation of Software object"""
+        """Return Markdown representation of Software object."""
 
         header = ""
         if self.software_name:

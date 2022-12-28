@@ -39,9 +39,7 @@ IDENTICAL CODE SNIPPET WITH COMMENTS ABOUT MAJOR PROBLEMS:
 ``````
 """
     flagged_code = openai_cli.completion(prompt, max_tokens=1800, stop=["``````"])
-    # print(flagged_code)
     deflagged_code = _validate_review_comments(flagged_code)
-    # print(deflagged_code)
     review_comments = _parse_flagged_code(code_snippet, deflagged_code)
     # adjust line numbers
     review_comments = [(line_num + line_offset, c) for line_num, c in review_comments]
@@ -68,7 +66,7 @@ CODE WITH IRRELEVANT #!# COMMENTS REMOVED:
 
 def _parse_flagged_code(original_code, flagged_code):
     """
-    Extract the comments from the flagged code
+    Extract the comments from the flagged code.
 
     also compare each line of the flagged_code with the original_code to make sure they are identical
     return a list of (line_number, comment) tuples
@@ -78,8 +76,6 @@ def _parse_flagged_code(original_code, flagged_code):
     # if len(flagged_lines) != len(original_lines):
     #     raise ValueError(
     #         "flagged code has different number of lines than original code"
-    #         f"\nORIGINAL CODE:\n{original_code}\nFLAGGED CODE:\n{flagged_code}\n"
-    #     )
 
     # regex to match all codelines and optionally match the comment at the end of a line that starts with `#!#`
     codeline_regex = re.compile(r"^(?P<codeline>.*?)(#!# (?P<comment>.+))?$")
@@ -95,10 +91,6 @@ def _parse_flagged_code(original_code, flagged_code):
         comment = match.group("comment")
         # make sure the codeline is identical to the original code
         if codeline.rstrip() != original_lines[line_number].rstrip():
-            print(
-                f"----line {line_number} is not identical to the original code. {repr(codeline)} != {repr(original_lines[line_number])}"
-                # f"\nORIGINAL CODE:\n{original_code}\nFLAGGED CODE:\n{flagged_code}\n"
-            )
             continue
         if comment:
             comments.append((line_number, comment.strip()))

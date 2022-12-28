@@ -13,6 +13,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def completion(
     prompt,
+    *,
     max_tokens=2000,
     temperature=0.0,
     top_p=1,

@@ -9,6 +9,10 @@ from black import FileMode, format_str
 
 from hasty_coder.filewalk import get_nonignored_file_paths
 
+from .foo import bar
+
+bar.me()
+
 
 def extract_first_docstring(code_text):
     """
@@ -50,7 +54,6 @@ def add_docstring(code_text, docstring_text):
     indentation_level = 0
 
     for token in tokens:
-        # print(tok_name[token.type], token.string)
         if token.type == tokenize.NAME and token.string in ["def", "class"]:
             # if this is the start of a function definition, set the flag to indicate that
             in_function_definition = True
@@ -75,14 +78,14 @@ def add_docstring(code_text, docstring_text):
 
 def get_file_docstring(path):
     """Return the docstring of a given Python file."""
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         file_sourcecode = f.read()
     mod_ast = ast.parse(file_sourcecode)
     return ast.get_docstring(mod_ast)
 
 
 def add_docstring_to_file(filename, docstring):
-    with open(filename, "r", encoding="utf-8") as f:
+    with open(filename, encoding="utf-8") as f:
         file_sourcecode = f.read()
     tree = ast.parse(file_sourcecode)
 
@@ -101,7 +104,7 @@ def add_docstring_to_sourcecode(sourcecode, docstring):
     prev_token = None
     token_line_offset = 0
     docstring_linecount = docstring.count("\n") + 1
-    for i, token in enumerate(tokens):
+    for token in tokens:
         if prev_token and prev_token.type == tokenize.ENCODING:
             docstring_wrapped = f'"""{docstring}"""\n'
             doc_token = tokenize.TokenInfo(
@@ -129,9 +132,7 @@ def validate_python_ast_equal(code_text_a, code_text_b):
     """Validate that two pieces of Python code have the same abstract syntax tree (AST)."""
     tree_a = ast.parse(textwrap.dedent(code_text_a))
     tree_b = ast.parse(textwrap.dedent(code_text_b))
-    # print(ast.dump(tree_a))
-    # print(ast.dump(tree_b))
-    for node_a, node_b in zip(ast.walk(tree_a), ast.walk(tree_b)):
+    for node_a, node_b in zip(ast.walk(tree_a), ast.walk(tree_b), strict=True):
         try:
             ds = ast.get_docstring(node_b)
             if ds:
@@ -140,12 +141,9 @@ def validate_python_ast_equal(code_text_a, code_text_b):
 
         except TypeError:
             pass
-        # print(type(node_a), type(node_b))
-        # assert type(node_a) == type(node_b)
+        assert type(node_a) == type(node_b)
 
     if ast.dump(tree_a) != ast.dump(tree_b):
-        print(ast.dump(tree_a))
-        print(ast.dump(tree_b))
         raise ValueError("ASTs are not equal")
 
 
@@ -170,6 +168,7 @@ def get_func_and_class_snippets(code: str, filepath: str = None):
                 start_line=start_line,
                 end_line=end_line,
                 filepath=filepath,
+                name=node.name,
             )
             snippets.append(snippet)
     return snippets
@@ -186,6 +185,7 @@ class CodeSnippet:
     end_line: int = None
     filepath: str = None
     snippet_type: str = None
+    name: str = None
 
     @property
     def docstring(self):
@@ -199,7 +199,7 @@ class CodeSnippet:
     @property
     def assigned_variables(self):
         """
-        Use ast to find assigned variables in a code snippet
+        Use ast to find assigned variables in a code snippet.
         """
         tree = ast.parse(self.code_text)
         variables = []
@@ -212,7 +212,7 @@ class CodeSnippet:
     @property
     def references(self):
         """
-        Use ast to find all references in the function body
+        Use ast to find all references in the function body.
         """
         tree = ast.parse(self.code_text)
         refs = []
@@ -227,10 +227,10 @@ def walk_python_files(path):
 
 
 def get_func_and_class_snippets_in_path(path):
-    """Return snippets of functions and classes from a given path"""
+    """Return snippets of functions and classes from a given path."""
     for rel_path in get_nonignored_file_paths(path, extensions=[".py"]):
         full_path = os.path.join(path, rel_path)
-        with open(full_path, "r", encoding="utf-8") as f:
+        with open(full_path, encoding="utf-8") as f:
             file_sourcecode = f.read()
 
         for snippet in get_func_and_class_snippets(file_sourcecode, filepath=full_path):

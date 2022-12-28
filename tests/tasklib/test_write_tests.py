@@ -19,5 +19,3 @@ def get_email(key_obj):
 
 def test_write_test():
     test_code = write_test(code_example)
-
-    print(test_code)

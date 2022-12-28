@@ -17,7 +17,7 @@ def fill_in_project_plan_from_path(path):
     project_root_path = Path(find_project_root(path))
     if project_root_path is None:
         raise ValueError("Could not find project root. Must be in a git repository.")
-    print(f"Project root: {project_root_path}")
+
     project_name = slugify(project_root_path.name).replace("-", " ").title()
 
     project_files = get_nonignored_file_paths(project_root_path)
@@ -40,10 +40,3 @@ def get_project_files_and_descriptions(root_path):
             description = get_file_docstring(abs_path)
         file_descriptions[file_path] = description or ""
     return file_descriptions
-
-
-if __name__ == "__main__":
-    for k, v in get_project_files_and_descriptions(
-        "/Users/bryce/projects/hasty-coder"
-    ).items():
-        print((k, v))

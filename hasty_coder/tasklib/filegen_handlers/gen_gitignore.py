@@ -71,5 +71,4 @@ def retreive_gitignore_template(template_name):
 
 
 if __name__ == "__main__":
-    print(gen_gitignore_for_language("python"))
-    # print(build_default_gitignore())
+    pass

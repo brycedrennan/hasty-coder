@@ -8,7 +8,7 @@ import requests
 
 def get_cached_url_contents(url, cache_duration_seconds=60 * 60 * 24 * 7):
     """
-    Return the contents of a url
+    Return the contents of a url.
 
     Cache responses for `cache_duration_seconds` in files in the os-appropriate temp dir in
     a subfolder `hasty-coder/filecache/`. They key should be an md5 of the url.

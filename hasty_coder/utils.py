@@ -27,11 +27,11 @@ class LoggedOpenAI(OpenAI):
         kwargs.setdefault("max_tokens", 2000)
         super().__init__(*args, **kwargs)
 
-    def __call__(self, prompt, stop=None, as_json=False, try_count=3):
-        """Call the OpenAI API and return the response as a string or JSON object"""
+    def __call__(self, prompt, stop=None, *, as_json=False, try_count=6):
+        """Call the OpenAI API and return the response as a string or JSON object."""
         prompt = prompt.strip()
         total_response = ""
-        for i in range(6):
+        for _i in range(try_count):
             logger.debug("STARTPROMPT\n%s\nENDPROMPT", prompt)
             try:
                 last_response = super().__call__(prompt + total_response, stop)
@@ -52,8 +52,8 @@ class LoggedOpenAI(OpenAI):
             except openai.error.Timeout:
                 logger.error("TIMEOUT ERROR")
                 continue
-
-        raise Exception("Failed to get valid JSON")
+        msg = f"Failed to get a valid response after {try_count} tries"
+        raise Exception(msg)
 
 
 def parallel_run(func, iterable, kwargs=None, max_workers=2):
@@ -90,7 +90,7 @@ def phraseify(text):
 
 
 def remove_last_comma_before_index(text, start_index):
-    """Find the index of the last comma before the start_index"""
+    """Find the index of the last comma before the start_index."""
     # Find the index of the last comma before the start_index
     last_comma_index = -1
     for i in range(start_index - 1, -1, -1):

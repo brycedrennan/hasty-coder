@@ -64,7 +64,7 @@ TECH STACK:
 
 
 def _meta_generate(
-    data_name, project_plan, instructions, as_json=False, temperature=0.01
+    data_name, project_plan, instructions, *, as_json=False, temperature=0.01
 ):
     """Generate data based on a project plan and instructions, with optional json formatting and temperature control."""
     data_name_display = data_name.replace("_", " ").title()
@@ -151,7 +151,7 @@ def generate_project_tagline(project_plan):
 
 
 def generate_project_emoji_tagline(project_plan):
-    """Generate an emoji tagline for a project plan"""
+    """Generate an emoji tagline for a project plan."""
     emoji_tagline = _meta_generate(
         data_name="emoji_tagline",
         project_plan=project_plan,
@@ -255,7 +255,7 @@ Write project files as a json list of strings.
 PROJECT FILES (json list of strings):
 """
     files = llm(prompt, as_json=True)
-    files = sorted(list(set(files + REQUIRED_PROJECT_FILES)))
+    files = sorted(set(files + REQUIRED_PROJECT_FILES))
 
     file_text = "\n".join(f" - {file}" for file in files)
     prompt = f"""
@@ -276,21 +276,9 @@ FILE DESCRIPTIONS (json dictionary):
     return structure
 
 
-# terminal_mode = """I want you to act as a Linux terminal. I will type commands and you will reply with what the terminal should show. I want you to only reply with the terminal output inside one unique code block, and nothing else. Do not write explanations. Do not type commands unless I instruct you to do so. When I need to tell you something in English I will do so by putting text inside curly brackets {like this}. My first command is pwd."""
-
 if __name__ == "__main__":
-    # print(determine_programming_language("test", "test"))
     logging.basicConfig(level=logging.INFO)
 
-    # program_description = generate_project_plan(
     #     "flask-joker",
-    #     "flask app that tells jokes using the openai client library (from pypi.org). doesn't use a database"
-    # )
-    # short_description = "a flask app that creates poetry based on a prompt from the user. it uses the openai client library from pypi.org"
     _short_description = generate_project_description_short()
-    print(f"Description: {_short_description}")
     program_description = generate_project_plan(_short_description)
-    print("")
-    print(program_description)
-    print("")
-    print(program_description.as_markdown())

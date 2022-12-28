@@ -7,7 +7,7 @@ def configure_logging(level="INFO"):
     if level == "DEBUG":
         fmt = "%(asctime)s [%(levelname)s] %(name)s:%(lineno)d: %(message)s"
 
-    LOGGING_CONFIG = {
+    logging_config = {
         "version": 1,
         "disable_existing_loggers": True,
         "formatters": {
@@ -37,4 +37,4 @@ def configure_logging(level="INFO"):
         },
     }
 
-    logging.config.dictConfig(LOGGING_CONFIG)
+    logging.config.dictConfig(logging_config)
