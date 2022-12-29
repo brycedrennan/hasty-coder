@@ -1,9 +1,11 @@
 import os
+from functools import lru_cache
 from pathlib import Path
 
 import pathspec
 
 
+@lru_cache(maxsize=1024)
 def find_project_root(start_path):
     """
     Traverse up from a starting path to find the project root.
@@ -49,8 +51,26 @@ __pypackages__
 """
 
 
-def load_gitignore_spec_at_path(path):
-    gitignore_path = os.path.join(path, ".gitignore")
+@lru_cache(maxsize=128)
+def load_gitignore_spec_relevant_to_path(path):
+    """Returns the gitignore spec relevant to the given path."""
+    path = Path(path)
+    if path.is_file():
+        path = path.parent
+    project_root = Path(find_project_root(path))
+    if project_root is None:
+        raise ValueError("Could not find project root. Must be in a git repository.")
+    curpath = path
+    ignore_spec = pathspec.GitIgnoreSpec([])
+    while project_root in curpath.parents or curpath == project_root:
+        path_ignore_spec = load_gitignore_spec(curpath / ".gitignore")
+        ignore_spec.patterns = ignore_spec.patterns + path_ignore_spec.patterns
+        curpath = curpath.parent
+    return ignore_spec
+
+
+@lru_cache(maxsize=128)
+def load_gitignore_spec(gitignore_path):
     if os.path.exists(gitignore_path):
         with open(gitignore_path, encoding="utf-8") as f:
             patterns = f.read().split("\n")
@@ -60,54 +80,31 @@ def load_gitignore_spec_at_path(path):
     return ignore_spec
 
 
-def get_nonignored_file_paths(directory, gitignore_dict=None, extensions=()):
-    return_relative = False
-    if gitignore_dict is None:
-        gitignore_dict = {}
-        return_relative = True
-    gitignore_dict = {
-        **gitignore_dict,
-        directory: load_gitignore_spec_at_path(directory),
-    }
-
+def get_nonignored_filepaths(directory, extensions=()):
+    """Return a list of filepaths in a directory, ignoring files in .gitignore."""
     file_paths = []
+    directory = Path(directory)
 
     for entry in os.scandir(directory):
-        if path_is_ignored(Path(entry.path), gitignore_dict):
+        ignore_spec = load_gitignore_spec_relevant_to_path(entry.path)
+        entry_relative_path = Path(entry.path).relative_to(directory)
+        if ignore_spec.match_file(entry_relative_path):
             continue
 
         if entry.is_file():
             if extensions:
                 if any(entry.path.endswith(ext) for ext in extensions):
-                    file_paths.append(entry.path)
+                    file_paths.append(entry_relative_path)
             else:
-                file_paths.append(entry.path)
+                file_paths.append(entry_relative_path)
 
         elif entry.is_dir():
-            subdir_file_paths = get_nonignored_file_paths(
-                entry.path, gitignore_dict=gitignore_dict, extensions=extensions
+            subdir_file_paths = get_nonignored_filepaths(
+                entry.path, extensions=extensions
             )
-            file_paths.extend(subdir_file_paths)
-    if return_relative:
-        file_paths = [os.path.relpath(f, directory) for f in file_paths]
-        file_paths.sort(key=lambda p: ("/" in p, p))
+            for subpath in subdir_file_paths:
+                file_paths.append(entry_relative_path / subpath)
+
+    file_paths.sort(key=lambda p: ("/" in str(p), p))
 
     return file_paths
-
-
-def path_is_ignored(path: Path, gitignore_dict) -> bool:
-    for gitignore_path, pattern in gitignore_dict.items():
-        try:
-            abspath = path if path.is_absolute() else Path.cwd() / path
-            normalized_path = abspath.resolve()
-            try:
-                relative_path = normalized_path.relative_to(gitignore_path).as_posix()
-            except ValueError:
-                return False
-
-        except OSError:
-            return False
-
-        if pattern.match_file(relative_path):
-            return True
-    return False

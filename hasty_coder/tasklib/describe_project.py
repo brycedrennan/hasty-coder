@@ -1,7 +1,7 @@
 import os.path
 from pathlib import Path
 
-from hasty_coder.filewalk import find_project_root, get_nonignored_file_paths
+from hasty_coder.filewalk import find_project_root, get_nonignored_filepaths
 from hasty_coder.langlib.python import get_file_docstring
 from hasty_coder.models import SoftwareProjectPlan
 from hasty_coder.utils import slugify
@@ -20,7 +20,7 @@ def fill_in_project_plan_from_path(path):
 
     project_name = slugify(project_root_path.name).replace("-", " ").title()
 
-    project_files = get_nonignored_file_paths(project_root_path)
+    project_files = get_nonignored_filepaths(project_root_path)
 
     project_plan = SoftwareProjectPlan(
         software_name=project_name,
@@ -32,7 +32,7 @@ def fill_in_project_plan_from_path(path):
 def get_project_files_and_descriptions(root_path):
     """Return a dictionary of project files and descriptions."""
     file_descriptions = {}
-    project_files = get_nonignored_file_paths(root_path)
+    project_files = get_nonignored_filepaths(root_path)
     for file_path in project_files:
         abs_path = os.path.join(root_path, file_path)
         description = ""

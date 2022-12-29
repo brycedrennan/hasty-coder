@@ -3,6 +3,7 @@ import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
+from pathlib import Path
 
 import openai
 import openai.error
@@ -117,3 +118,10 @@ def robust_json_loads(json_string):
                 json_string = remove_last_comma_before_index(json_string, e.pos)
                 continue
             raise e
+
+def ensure_dir_exists(path):
+    """Create a directory if it does not exist."""
+    path = Path(path)
+    if path.is_file():
+        path = path.parent
+    path.mkdir(parents=True, exist_ok=True)
