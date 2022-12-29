@@ -55,10 +55,29 @@ def build_out_test_suite(path):
     pass
 
 
-def enumerate_existing_tests(path):
+def enumerate_needed_tests(path):
+    testable_functions = {}
+    existing_tests = {}
+    have_tests = []
+    needed_tests = []
     for snippet in get_func_and_class_snippets_in_path(path):
-        pass
+        if snippet.module_path.startswith("tests"):
+            existing_tests[(snippet.module_path, snippet.ast_path_str)] = snippet
+            continue
+        testable_functions[snippet.expected_test_location] = snippet
+
+    for test_location, snippet in testable_functions.items():
+        if test_location in existing_tests:
+            have_tests.append(test_location)
+        else:
+            needed_tests.append((*test_location, snippet))
+
+    needed_tests = list(needed_tests)
+    needed_tests.sort()
+
+    return needed_tests
+
 
 
 if __name__ == "__main__":
-    enumerate_existing_tests("/Users/bryce/projects/hasty-coder")
+    enumerate_needed_tests("/Users/bryce/projects/hasty-coder")

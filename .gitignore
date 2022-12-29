@@ -12,3 +12,4 @@ dist
 .pytest-cache
 .git
 .pytest_cache
+.ruff_cache

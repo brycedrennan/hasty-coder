@@ -1,17 +1,17 @@
 import ast
 import os.path
+import re
+import sys
 import textwrap
 import tokenize
+from ast import iter_child_nodes
+from collections import deque
 from dataclasses import dataclass
 from io import BytesIO
 
 from black import FileMode, format_str
 
 from hasty_coder.filewalk import get_nonignored_file_paths
-
-from .foo import bar
-
-bar.me()
 
 
 def extract_first_docstring(code_text):
@@ -66,7 +66,7 @@ def add_docstring(code_text, docstring_text):
                 code_lines = code_text.splitlines()
                 # pad the docstring with newlines to match the indentation of the code
                 docstring_text = (
-                    " " * (indentation_level + 4) + f'"""{docstring_text.strip()}"""'
+                        " " * (indentation_level + 4) + f'"""{docstring_text.strip()}"""'
                 )
                 code_lines.insert(token.end[0], docstring_text)
                 new_code_text = "\n".join(code_lines)
@@ -147,12 +147,28 @@ def validate_python_ast_equal(code_text_a, code_text_b):
         raise ValueError("ASTs are not equal")
 
 
+def walk(node):
+    """
+    Recursively yield all descendant nodes in the tree starting at *node*
+    (including *node* itself), in no specified order.  This is useful if you
+    only want to modify nodes in place and don't care about the context.
+    """
+    to_visit = deque([node])
+    while to_visit:
+        node = to_visit.popleft()
+        to_visit.extend(iter_child_nodes(node))
+
+
 def get_func_and_class_snippets(code: str, filepath: str = None):
     """Return snippets of functions and classes from a given code string."""
     tree = ast.parse(code)
     lines = code.splitlines()
     snippets = []
-    for node in ast.walk(tree):
+    to_visit = deque([tree])
+    while to_visit:
+        node = to_visit.popleft()
+        for child in ast.iter_child_nodes(node):
+            child.parent = node
         if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
             start_line = len(lines) + 1
             end_line = 0
@@ -162,15 +178,27 @@ def get_func_and_class_snippets(code: str, filepath: str = None):
                 end_line = max(end_line, decorator.end_lineno)
             start_line = min(start_line, node.lineno)
             end_line = max(end_line, node.end_lineno)
-            code_text = "\n".join(lines[start_line - 1 : end_line]) + "\n"
-            snippet = CodeSnippet(
+            code_text = "\n".join(lines[start_line - 1: end_line]) + "\n"
+
+            parent_path = []
+            cur_node = node
+            while cur_node is not None:
+                parent_path.append(cur_node)
+                cur_node = getattr(cur_node, "parent", None)
+
+            s = CodeSnippet(
                 code_text=code_text,
                 start_line=start_line,
                 end_line=end_line,
                 filepath=filepath,
                 name=node.name,
+                snippet_type=node.__class__.__name__,
+                ast_path=parent_path,
             )
-            snippets.append(snippet)
+
+            snippets.append(s)
+
+        to_visit.extend(iter_child_nodes(node))
     return snippets
 
 
@@ -186,6 +214,7 @@ class CodeSnippet:
     filepath: str = None
     snippet_type: str = None
     name: str = None
+    ast_path: list = None
 
     @property
     def docstring(self):
@@ -221,9 +250,64 @@ class CodeSnippet:
                 refs.append(node.id)
         return refs
 
+    @property
+    def module_path(self):
+        """
+        Return the python import path of a code snippet.
+
+        Uses the sys.path to find the module path of a code snippet based on it's filepath
+        """
+        filepath = os.path.abspath(self.filepath)
+        filepath = os.path.splitext(filepath)[0]
+
+        for p in sys.path:
+            p += os.sep
+            if not filepath.startswith(p):
+                continue
+
+            relpath = filepath[len(p):]
+
+            dirs = relpath.split(os.sep)
+
+            # Compute the dotted import path by replacing the os.sep separator with a dot and joining the directories
+            import_path = ".".join(dirs).replace(os.sep, ".")
+            return import_path
+        raise ValueError("The file is not in any of the PYTHONPATH directories")
+
+    @property
+    def ast_path_str(self):
+        named_nodes = [n for n in self.ast_path if hasattr(n, "name")]
+        named_nodes.reverse()
+        return ".".join(n.name for n in named_nodes)
+
+    @property
+    def expected_test_location(self):
+        """
+        Return the expected location of the test for this snippet.
+        """
+        if self.module_path.startswith("tests"):
+            return "", ""
+        module_path_parts = self.module_path.split(".")
+
+        module_path_parts.insert(0, "tests")
+        module_path_parts[-1] = f"test_{module_path_parts[-1]}"
+        test_module_path = ".".join(module_path_parts)
+
+        test_ast_path = camel_to_snake(self.ast_path_str.replace(".", "_"))
+        test_ast_path = "test_" + test_ast_path
+        test_ast_path = test_ast_path.strip("_")
+        test_ast_path = re.sub(r"_+", "_", test_ast_path)
+
+        return test_module_path, test_ast_path
+
 
 def walk_python_files(path):
     return get_nonignored_file_paths(path, extensions=[".py"])
+
+
+def camel_to_snake(name):
+    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
 
 
 def get_func_and_class_snippets_in_path(path):
