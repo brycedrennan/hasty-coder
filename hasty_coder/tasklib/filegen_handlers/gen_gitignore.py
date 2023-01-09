@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def gen_gitignore(filepath, description, project_plan: SoftwareProjectPlan):
     """Generate a .gitignore file from a SoftwareProjectPlan object."""
     return gen_gitignore_for_language(
-        project_plan.software_stack.primary_programming_language
+        project_plan.software_stack["programming_language"]
     )
 
 
