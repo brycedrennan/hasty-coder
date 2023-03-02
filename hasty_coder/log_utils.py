@@ -26,7 +26,12 @@ def configure_logging(level="INFO"):
         "loggers": {
             "": {  # root logger
                 "handlers": ["default"],
-                "level": "WARNING",
+                "level": "WARNING" if level != "DEBUG" else "INFO",
+                "propagate": False,
+            },
+            "__main__": {
+                "handlers": ["default"],
+                "level": level,
                 "propagate": False,
             },
             "hasty_coder": {

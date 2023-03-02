@@ -1,7 +1,6 @@
 import ast
 import os.path
 import re
-import sys
 import textwrap
 import tokenize
 from ast import iter_child_nodes
@@ -12,7 +11,7 @@ from pathlib import Path
 
 from black import FileMode, format_str
 
-from hasty_coder.filewalk import get_nonignored_filepaths, find_project_root
+from hasty_coder.filewalk import get_nonignored_filepaths
 
 
 def extract_first_docstring(code_text):
@@ -160,10 +159,13 @@ def walk(node):
         to_visit.extend(iter_child_nodes(node))
 
 
-def get_func_and_class_snippets(code: str, filepath: str = None, project_root: str = None):
+def get_func_and_class_snippets(
+    code: str, filepath: str = None, project_root: str = None
+):
     """Return snippets of functions and classes from a given code string."""
     tree = ast.parse(code)
     lines = code.splitlines()
+    import_nodes = []
     snippets = []
     to_visit = deque([tree])
     filepath = Path(filepath) if filepath else None
@@ -173,9 +175,16 @@ def get_func_and_class_snippets(code: str, filepath: str = None, project_root: s
         project_path = filepath.relative_to(project_root)
     while to_visit:
         node = to_visit.popleft()
+
         for child in ast.iter_child_nodes(node):
             child.parent = node
-        if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            import_nodes.append(node)
+            # import_line_nums.add(node.lineno)
+            # import_lines = sorted(import_line_nums)
+            # import_lines = [lines[i - 1] for i in import_lines]
+            # import_code = "\n".join(import_lines)
+        elif isinstance(node, (ast.FunctionDef, ast.ClassDef)):
             start_line = len(lines) + 1
             end_line = 0
 
@@ -191,6 +200,11 @@ def get_func_and_class_snippets(code: str, filepath: str = None, project_root: s
             while cur_node is not None:
                 parent_path.append(cur_node)
                 cur_node = getattr(cur_node, "parent", None)
+            refs = []
+            for fnode in ast.walk(node):
+                if isinstance(fnode, ast.Name):
+                    refs.append(fnode.id)
+            imports_src = filter_imports(import_nodes, refs)
 
             s = CodeSnippet(
                 code_text=code_text,
@@ -199,6 +213,7 @@ def get_func_and_class_snippets(code: str, filepath: str = None, project_root: s
                 filepath=filepath,
                 project_path=project_path,
                 project_root=project_root,
+                imports_src=imports_src,
                 name=node.name,
                 snippet_type=node.__class__.__name__,
                 ast_path=parent_path,
@@ -208,6 +223,22 @@ def get_func_and_class_snippets(code: str, filepath: str = None, project_root: s
 
         to_visit.extend(iter_child_nodes(node))
     return snippets
+
+
+def filter_imports(imports, var_names):
+    var_set = set(var_names)
+    filtered_imports = []
+    for node in imports:
+        if isinstance(node, ast.ImportFrom):
+            node.names = [name for name in node.names if name.name in var_set]
+            if node.names:
+                filtered_imports.append(node)
+        elif isinstance(node, ast.Import):
+            node.names = [name for name in node.names if name.name in var_set]
+            if node.names:
+                filtered_imports.append(node)
+    root_node = ast.Module(body=filtered_imports)
+    return ast.unparse(root_node)
 
 
 def format_code(code_text):
@@ -223,6 +254,7 @@ class CodeSnippet:
     project_path: str = None
     project_root: str = None
     snippet_type: str = None
+    imports_src: str = None
     name: str = None
     ast_path: list = None
 
@@ -234,6 +266,12 @@ class CodeSnippet:
     def formatted_code_text(self):
         code_text = textwrap.dedent(self.code_text)
         return format_code(code_text)
+
+    @property
+    def formatted_code_text_with_imports(self):
+        code_text = textwrap.dedent(self.code_text)
+        formatted_code = format_code(self.imports_src + "\n\n" + code_text)
+        return formatted_code
 
     @property
     def assigned_variables(self):
@@ -339,5 +377,7 @@ def get_func_and_class_snippets_in_path(path, project_root=None):
         with open(full_path, encoding="utf-8") as f:
             file_sourcecode = f.read()
 
-        for snippet in get_func_and_class_snippets(file_sourcecode, filepath=full_path, project_root=project_root):
+        for snippet in get_func_and_class_snippets(
+            file_sourcecode, filepath=full_path, project_root=project_root
+        ):
             yield snippet

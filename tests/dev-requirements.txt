@@ -4,100 +4,172 @@
 #
 #    pip-compile --output-file=tests/dev-requirements.txt --resolver=backtracking setup.py tests/dev-requirements.in
 #
-astroid==2.12.13
+aiodns==3.0.0
+    # via aleph-alpha-client
+aiohttp==3.8.4
+    # via
+    #   aiohttp-retry
+    #   aleph-alpha-client
+    #   langchain
+    #   openai
+aiohttp-retry==2.8.3
+    # via aleph-alpha-client
+aiosignal==1.3.1
+    # via aiohttp
+aleph-alpha-client==2.16.0
+    # via langchain
+astroid==2.14.2
     # via pylint
-attrs==22.1.0
-    # via pytest
-black==22.12.0
+async-timeout==4.0.2
+    # via aiohttp
+attrs==22.2.0
+    # via
+    #   aiohttp
+    #   pytest
+black==23.1.0
     # via
     #   -r tests/dev-requirements.in
     #   hasty-coder (setup.py)
+boto3==1.26.82
+    # via deeplake
+botocore==1.29.82
+    # via
+    #   boto3
+    #   s3transfer
 certifi==2022.12.7
     # via requests
-charset-normalizer==2.1.1
-    # via requests
+cffi==1.15.1
+    # via pycares
+charset-normalizer==3.0.1
+    # via
+    #   aiohttp
+    #   requests
 click==8.1.3
     # via
     #   black
+    #   deeplake
     #   hasty-coder (setup.py)
-    #   typer
-coverage==6.5.0
+coverage==7.2.1
     # via -r tests/dev-requirements.in
-dill==0.3.6
-    # via pylint
-et-xmlfile==1.1.0
-    # via openpyxl
-exceptiongroup==1.0.4
-    # via pytest
-idna==3.4
-    # via requests
-iniconfig==1.1.1
-    # via pytest
-isort==5.10.1
+dataclasses-json==0.5.7
+    # via langchain
+deeplake==3.2.12
     # via
-    #   -r tests/dev-requirements.in
+    #   hub
+    #   langchain
+dill==0.3.6
+    # via
+    #   multiprocess
+    #   pathos
+    #   pylint
+entrypoints==0.4
+    # via numcodecs
+exceptiongroup==1.1.0
+    # via pytest
+frozenlist==1.3.3
+    # via
+    #   aiohttp
+    #   aiosignal
+hub==3.0.1
+    # via deeplake
+humbug==0.2.8
+    # via deeplake
+idna==3.4
+    # via
+    #   requests
+    #   yarl
+iniconfig==2.0.0
+    # via pytest
+isort==5.12.0
+    # via
     #   hasty-coder (setup.py)
     #   pylint
-langchain==0.0.35
+jmespath==1.0.1
+    # via
+    #   boto3
+    #   botocore
+langchain==0.0.98
     # via hasty-coder (setup.py)
-lazy-object-proxy==1.8.0
+lazy-object-proxy==1.9.0
     # via astroid
-libcst==0.4.9
-    # via pycln
+marshmallow==3.19.0
+    # via
+    #   dataclasses-json
+    #   marshmallow-enum
+marshmallow-enum==1.5.1
+    # via dataclasses-json
 mccabe==0.7.0
     # via
     #   pylama
     #   pylint
-mypy-extensions==0.4.3
+multidict==6.0.4
+    # via
+    #   aiohttp
+    #   yarl
+multiprocess==0.70.14
+    # via pathos
+mypy-extensions==1.0.0
     # via
     #   black
     #   typing-inspect
-numpy==1.23.5
+numcodecs==0.11.0
+    # via deeplake
+numpy==1.24.2
     # via
+    #   deeplake
     #   langchain
-    #   openai
-    #   pandas
-openai==0.25.0
+    #   numcodecs
+openai==0.27.0
     # via hasty-coder (setup.py)
-openpyxl==3.0.10
-    # via openai
-orjson==3.8.3
+orjson==3.8.7
     # via hasty-coder (setup.py)
-packaging==22.0
-    # via
-    #   pytest
-    #   pytest-sugar
-pandas==1.5.2
-    # via openai
-pandas-stubs==1.5.2.221124
-    # via openai
-pathspec==0.9.0
+packaging==23.0
     # via
     #   black
-    #   pycln
-platformdirs==2.6.0
+    #   marshmallow
+    #   pytest
+    #   pytest-sugar
+pathos==0.3.0
+    # via deeplake
+pathspec==0.11.0
+    # via
+    #   black
+    #   hasty-coder (setup.py)
+pillow==9.4.0
+    # via deeplake
+platformdirs==3.0.0
     # via
     #   black
     #   pylint
 pluggy==1.0.0
     # via pytest
-pycln==2.1.2
-    # via -r tests/dev-requirements.in
+pox==0.3.2
+    # via pathos
+ppft==1.7.6.6
+    # via pathos
+pycares==4.3.0
+    # via aiodns
 pycodestyle==2.10.0
     # via pylama
-pydantic==1.10.2
-    # via langchain
+pycparser==2.21
+    # via cffi
+pydantic==1.10.5
+    # via
+    #   hasty-coder (setup.py)
+    #   langchain
 pydocstyle==6.1.1
     # via
     #   -r tests/dev-requirements.in
     #   pylama
 pyflakes==3.0.1
     # via pylama
+pyjwt==2.6.0
+    # via deeplake
 pylama==8.4.1
     # via -r tests/dev-requirements.in
-pylint==2.15.8
+pylint==2.16.2
     # via -r tests/dev-requirements.in
-pytest==7.2.0
+pytest==7.2.1
     # via
     #   -r tests/dev-requirements.in
     #   pytest-randomly
@@ -107,29 +179,34 @@ pytest-randomly==3.12.0
 pytest-sugar==0.9.6
     # via -r tests/dev-requirements.in
 python-dateutil==2.8.2
-    # via pandas
-pytz==2022.6
-    # via pandas
+    # via botocore
 pyyaml==6.0
+    # via langchain
+requests==2.28.2
     # via
-    #   langchain
-    #   libcst
-    #   pycln
-requests==2.28.1
-    # via
+    #   aleph-alpha-client
+    #   humbug
     #   langchain
     #   openai
     #   responses
 responses==0.22.0
     # via -r tests/dev-requirements.in
+ruff==0.0.253
+    # via -r tests/dev-requirements.in
+s3transfer==0.6.0
+    # via boto3
 six==1.16.0
     # via python-dateutil
 snowballstemmer==2.2.0
     # via pydocstyle
-sqlalchemy==1.4.45
+sqlalchemy==1.4.46
     # via langchain
-termcolor==2.1.1
+tenacity==8.2.2
+    # via langchain
+termcolor==2.2.0
     # via pytest-sugar
+tokenizers==0.13.2
+    # via aleph-alpha-client
 toml==0.10.2
     # via responses
 tomli==2.0.1
@@ -138,28 +215,27 @@ tomli==2.0.1
     #   pylint
     #   pytest
 tomlkit==0.11.6
-    # via
-    #   pycln
-    #   pylint
+    # via pylint
 tqdm==4.64.1
-    # via openai
-typer==0.7.0
-    # via pycln
-types-pytz==2022.6.0.1
-    # via pandas-stubs
-types-toml==0.10.8.1
-    # via responses
-typing-extensions==4.4.0
     # via
-    #   libcst
+    #   deeplake
     #   openai
+types-toml==0.10.8.5
+    # via responses
+typing-extensions==4.5.0
+    # via
+    #   astroid
     #   pydantic
     #   typing-inspect
 typing-inspect==0.8.0
-    # via libcst
-urllib3==1.26.13
+    # via dataclasses-json
+urllib3==1.26.14
     # via
+    #   aleph-alpha-client
+    #   botocore
     #   requests
     #   responses
-wrapt==1.14.1
+wrapt==1.15.0
     # via astroid
+yarl==1.8.2
+    # via aiohttp

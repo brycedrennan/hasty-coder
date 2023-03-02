@@ -42,7 +42,7 @@ SOFTWARE PROJECT DESCRIPTION:
 {project_plan.as_markdown()}
 ```
 INSTRUCTIONS:
-Based on the software project description above, determine what an appropriate tech stack would be. 
+Based on the software project description above, determine what an appropriate tech stack would be.
 Use the format provided in the JSON template below. Replace the parts contained in angle brackets with the appropriate values.
 
 JSON TEMPLATE:
@@ -109,8 +109,8 @@ def generate_project_description_long(project_plan):
 def rewrite_project_description(description):
     """Rewrite a software project description into a more clear and concise thought."""
     prompt = f"""
-Re-write the following description for a software project into a more clear and concise thought.  It should be written 
-as a description not a command.  It should be written in the present tense. 
+Re-write the following description for a software project into a more clear and concise thought.  It should be written
+as a description not a command.  It should be written in the present tense.
 
 DESCRIPTION:
 {description}
@@ -251,7 +251,7 @@ Based on the description above, let's layout the project file structure. No code
 folder. Show all the files in each folder. The base project folder should have a README.md file, a Makefile, a Dockerfile, and a .gitignore file.
 Make sure the project specifies it's library dependencies. There should be a thorough test suite that mimics the structure of the code.
 Write project files as a json list of strings.
-    
+
 PROJECT FILES (json list of strings):
 """
     files = llm(prompt, as_json=True)

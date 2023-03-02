@@ -12,5 +12,14 @@ setup(
             "hc = hasty_coder.cli:route_cmd",
         ]
     },
-    install_requires=["black", "click", "isort", "langchain", "openai", "orjson", "pathspec"],
+    install_requires=[
+        "black",
+        "click",
+        "isort",
+        "langchain",
+        "openai",
+        "orjson",
+        "pathspec",
+        "pydantic",
+    ],
 )

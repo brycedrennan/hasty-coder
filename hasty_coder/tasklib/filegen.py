@@ -18,7 +18,10 @@ def generate_file_contents(filepath, project_plan: SoftwareProjectPlan):
     logger.info("Generating %s", filepath)
     handler = match_file_handler(filepath)
     if handler:
-        return handler(filepath, description, project_plan)
+        try:
+            return handler(filepath, description, project_plan)
+        except Exception:
+            logger.exception("Error generating %s", filepath)
 
     stopword = "ENDOFFILE_ZZZ"
     prompt = f"""

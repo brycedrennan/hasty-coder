@@ -26,7 +26,7 @@ init: require_pyenv  ## Setup a dev environment for local development.
 
 af: autoformat  ## Alias for `autoformat`
 autoformat:  ## Run the autoformatter.
-	@-ruff --extend-ignore ANN,ARG001,C90,DTZ,D100,D101,D102,D103,D202,D203,D212,D415,E501,RET504,S101 --extend-select C,D400,ERA,I,T201,UP,W --fix .
+	@-ruff --extend-ignore ANN,ARG001,C90,DTZ,D100,D101,D102,D103,D202,D203,D212,D415,E501,RET504,S101 --extend-select C,D400,ERA,I,T201,UP,W --unfixable T,ERA --fix .
 	@black .
 
 test:  ## Run the tests.

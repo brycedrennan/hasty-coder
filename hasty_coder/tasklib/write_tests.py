@@ -32,15 +32,22 @@ Steps to write a unit test for a single function
 
 """
 import logging
+import os.path
+from pathlib import Path
+
 from hasty_coder import openai_cli
 from hasty_coder.filewalk import find_project_root
 from hasty_coder.langlib.python import (
-    get_func_and_class_snippets_in_path, import_path_to_file_path,
+    CodeSnippet,
+    format_code,
+    get_func_and_class_snippets_in_path,
+    import_path_to_file_path,
 )
 from hasty_coder.log_utils import configure_logging
 from hasty_coder.utils import ensure_dir_exists
 
 logger = logging.getLogger(__name__)
+
 
 def write_test(code_snippet, project_plan=None):
     prompt = f"""
@@ -57,19 +64,23 @@ UNIT TESTS:"""
     return test_code
 
 
-def write_single_test(code_snippet, test_name, project_plan=None):
+def write_single_test(snippet: CodeSnippet, project_plan=None):
+    test_module_path, test_function_name = snippet.expected_test_location
     prompt = f"""
 INSTRUCTIONS:
-Write a single unit test `{test_name}` for the following code snippet. Use the pytest library. Use the pytest `monkeypatch` fixture to mock any external calls. 
-If it makes sense, use parameters (@pytest.mark.parametrize) to test multiple scenarios.
+Write a single unit test, `{test_function_name}`, that tests `{snippet.ast_path_str}` which is imported from `{snippet.module_path}`.
+The code snippet to be tests is below.
+Use the pytest library. Use the pytest `monkeypatch` fixture to mock any external calls.
+If it makes sense, use parameters (@pytest.mark.parametrize) to test multiple scenarios (no more than 20 scenarios).
 
 CODE SNIPPET:
 ```
-{code_snippet}
+{snippet.formatted_code_text_with_imports}
 ```
 
 UNIT TESTS:"""
     test_code = openai_cli.completion(prompt)
+    format_code(test_code)
     return test_code
 
 
@@ -103,18 +114,34 @@ def enumerate_needed_tests(path):
 
 
 def create_test_suite(path):
-
     needed_tests = enumerate_needed_tests(path)
+    project_root = find_project_root(path)
     for test_import_path, test_function_name, snippet in needed_tests:
         assert "." not in test_function_name
-        logger.info(f"Writing test {test_import_path}:{test_function_name} for {snippet.module_path}:{snippet.ast_path_str}")
-        logger.debug(f"Snippet: {snippet.code}")
+        logger.info(
+            f"Writing test {test_import_path}:{test_function_name} for {snippet.module_path}:{snippet.ast_path_str}"
+        )
+        logger.debug(f"Snippet: {snippet.code_text}")
 
-        test_code = write_single_test(snippet.code_text, test_function_name)
-        logger.debug(f"Test code: {test_code}")
         test_filepath = import_path_to_file_path(test_import_path)
-        ensure_dir_exists(test_filepath)
+        test_filepath = os.path.join(project_root, test_filepath)
+
+        test_dir = os.path.dirname(test_filepath)
+        ensure_dir_exists(test_dir)
+        Path(test_filepath).touch()
+
+        test_code = write_single_test(snippet, test_function_name)
+        # test_code = ""
+        logger.debug(f"Test code: {test_code}")
+
+        with open(test_filepath) as f:
+            f.write("\n")
+            f.write(test_code)
+            f.write("\n\n")
+
 
 if __name__ == "__main__":
-    configure_logging()
-    create_test_suite("/Users/bryce/projects/hasty-coder/hasty_coder/tasklib/filegen_handlers")
+    configure_logging("DEBUG")
+    create_test_suite(
+        "/Users/bryce/projects/hasty-coder/hasty_coder/tasklib/filegen_handlers"
+    )

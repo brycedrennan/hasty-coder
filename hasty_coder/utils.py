@@ -119,6 +119,7 @@ def robust_json_loads(json_string):
                 continue
             raise e
 
+
 def ensure_dir_exists(path):
     """Create a directory if it does not exist."""
     path = Path(path)

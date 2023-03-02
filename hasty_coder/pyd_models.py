@@ -1,0 +1,122 @@
+from textwrap import dedent
+
+from pydantic import BaseModel, validator
+
+from hasty_coder.utils import slugify
+
+
+class SoftwareStack(BaseModel):
+    """Define a SoftwareStack class to store software stack information."""
+
+    primary_programming_language: str = None
+    secondary_programming_languages: list[str] = None
+    primary_framework: str = None
+    secondary_frameworks: list[str] = None
+    testing_tooling: list[str] = None
+
+    @validator("secondary_programming_languages", pre=True, always=True)
+    def default_secondary_languages(cls, v):
+        """Ensure that the list of secondary programming languages is not None."""
+        return v or []
+
+    @validator("secondary_frameworks", pre=True, always=True)
+    def default_secondary_frameworks(cls, v):
+        """Ensure that the list of secondary frameworks is not None."""
+        return v or []
+
+    @validator("testing_tooling", pre=True, always=True)
+    def default_testing_tooling(cls, v):
+        """Ensure that the list of testing tooling is not None."""
+        return v or []
+
+    def as_markdown(self):
+        """Return a markdown string representation of the object."""
+        md = dedent(
+            f"""
+        - Programming Languages: **{self.primary_programming_language}**. {", ".join(self.secondary_programming_languages)}
+        - Frameworks: **{self.primary_framework}**. {", ".join(self.secondary_frameworks)}
+        - Testing Tooling: {", ".join(self.testing_tooling)}
+        """
+        )
+        return md.strip()
+
+
+class SoftwareProjectPlan(BaseModel):
+    """Define a SoftwareProjectPlan class."""
+
+    software_name: str = None
+    short_description: str = None
+    long_description: str = None
+    tagline: str = None
+    emoji_tagline: str = None
+    installation_instructions: str = None
+    quick_start: str = None
+    features: dict = None
+    todo: list[str] = None
+    software_stack: SoftwareStack = None
+    project_files: dict = None
+
+    @property
+    def slug(self):
+        """Return a slugified version of the software name."""
+        return slugify(self.software_name)
+
+    def as_markdown(self, excluded_sections=None):
+        """Return Markdown representation of Software object."""
+
+        header = ""
+        if self.software_name:
+            header += f"# {self.software_name}"
+        if self.emoji_tagline:
+            header += f" {self.emoji_tagline}"
+        if header:
+            header += "\n\n"
+        if self.tagline:
+            header += f"**{self.tagline}**\n\n"
+        if self.short_description:
+            header += f"{self.short_description}\n\n"
+        if self.long_description:
+            header += f"{self.long_description}\n\n"
+
+        section_texts = []
+        skip_keys = [
+            "softwareName",
+            "shortDescription",
+            "longDescription",
+            "tagline",
+            "emojiTagline",
+        ]
+        if excluded_sections:
+            skip_keys.extend(excluded_sections)
+
+        for key, value in self.dict(exclude=skip_keys).items():
+            if value:
+                formatted_key = key.replace("_", " ").title()
+                section_text = f"## {formatted_key}\n{value}"
+                if hasattr(value, "as_markdown"):
+                    section_text = f"## {formatted_key}\n{value.as_markdown()}"
+                elif key == "project_files":
+                    subsection_texts = []
+                    for subkey, subvalue in value.items():
+                        subsection_text = f" - `{subkey}` - {subvalue}"
+                        subsection_texts.append(subsection_text)
+                    subsection_text = "\n".join(subsection_texts)
+                    section_text = f"## {formatted_key}\n{subsection_text}"
+                elif isinstance(value, dict):
+                    subsection_texts = []
+                    for subkey, subvalue in value.items():
+                        subsection_text = f" - {subkey} - {subvalue}"
+                        subsection_texts.append(subsection_text)
+                    subsection_text = "\n".join(subsection_texts)
+                    section_text = f"## {formatted_key}\n{subsection_text}"
+                elif isinstance(value, list):
+                    subsection_texts = []
+                    for item in value:
+                        subsection_text = f" - {item}"
+                        subsection_texts.append(subsection_text)
+                    subsection_text = "\n".join(subsection_texts)
+                    section_text = f"## {formatted_key}\n{subsection_text}"
+                section_texts.append(section_text)
+
+        doctext = "\n\n".join(section_texts)
+        return header + doctext

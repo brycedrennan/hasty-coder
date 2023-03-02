@@ -17,7 +17,7 @@ Write a very-short, concise single-line docstring for each function and class be
 
 The docstrings describe the purpose of the code.
 The docstrings should not be generic.  Things that look like "Create a FooBar object..." are too generic.
-The docstrings should be in the imperative mood. 
+The docstrings should be in the imperative mood.
 
 Return your docstrings in a json dict where the keys are line numbers and the values are descriptions.
 
@@ -101,7 +101,7 @@ def edit_file(filepath, start_line_no, end_line_no, injected_content):
     """Edit a file by replacing a range of lines with new content."""
     with open(filepath, encoding="utf-8") as f:
         lines = f.readlines()
-    replacing = lines[start_line_no - 1 : end_line_no]
+
     lines[start_line_no - 1 : end_line_no] = injected_content.splitlines(keepends=True)
 
     with open(filepath, "w", encoding="utf-8") as f:

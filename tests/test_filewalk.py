@@ -1,4 +1,8 @@
-from hasty_coder.filewalk import load_gitignore_spec_relevant_to_path, find_project_root, get_nonignored_filepaths
+from hasty_coder.filewalk import (
+    find_project_root,
+    get_nonignored_filepaths,
+    load_gitignore_spec_relevant_to_path,
+)
 
 
 def test_load_gitignore_spec_relevant_to_path():
